@@ -1,6 +1,6 @@
 ---
-author: Author name here
-title: Concepts of programming languages
+author: Carlos Tomé Cortiñas, Renate Eilers and Matthew Swart
+title: Scala
 subtitle: My title here
 theme: uucs
 mainfont: Ubuntu Light
@@ -10,7 +10,7 @@ sansfont: Ubuntu Light
 Please use Markdown to write your slides. 
 
 This makes sure that slides will be consistent -- and easy for me to
-edit in the future.
+edit in the future. Test
 
 ---
 

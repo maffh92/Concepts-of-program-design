@@ -1,0 +1,106 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{multicol}
+\usepackage{hyperref}
+\usepackage{dirtytalk}
+\title{Generic Programming in Scala \\
+\large{Project Proposal}}
+\author{Carlos Tomé Cortiñas
+\and Matthew Swart
+\and Renate Eilers}
+\begin{document}
+\maketitle
+
+\section{Introduction} 
+
+Oftentimes, programmers find themselves writing very similar programs for various datatypes. Consider, for instance, functions for  calculating the size of a datastructure such as a list or a tree. On the surface these programs will look quite different, as they are designed to work on different datatypes. On a closer look, however, they are actually very similar. From the wish to quit repeatedly writing more-or-less the same functions, the idea of \emph{datatype-generic programming} was born. Datatype-generic programming entails the writing of functions on the \emph{structure} of datatypes rather than on concrete instantiations. This allows programmers to write a single function to work on an entire class of datatypes. The main idea here is that most datastructures can be translated to a combination of basic structural elements, such as sums and products. Abstracting over the specifics of a datastructure allows us to see that many computations simply consists of transforming one structure into another or breaking it down into a single value. If such functions are then defined as operations on the structures of these aforementioned \emph{standard} types, a lot of code duplication can be foregone. 
+
+According to Gibbons\cite{Gibbons06designpatterns}, a language should allow parameterisation in three forms in order to support datatype-generic programming, :
+\begin{itemize}
+\setlength\itemsep{0em}
+	\item By \emph{element type}: for instance, allow lists datatypes to parameterise over the items they can contain rather than having dedicated integer lists and character lists.	
+	\item By the \emph{body} of the computation: consider higher order functions such as \texttt{map} and \texttt{fold}, allowing a multitude of functions to be applied to a single datatype.
+	\item By \emph{shape} of the computation: folding over a tree or a list structure is essentially a process of recursing over a structure following the datatype definition, and replacing type constructors by given arguments along the way. In order to support datatype-generic programming, a language should provide the functionality to parameterise over these shapes.
+\end{itemize}
+
+Historically, Haskell has been the popular choice for datatype-generic programming, as it supports all the above forms of parameterisation (Oliveira and Gibbons,\cite{Oliveira08scalafor}). More recently it has been argued that the Scala programming language is a fairly reasonable choice as well. 
+
+Scala\cite{odersky2004scala} is a language incorporating features from both the functional and object-oriented paradigm. It runs on the Java platform, and operates with all Java libraries seamlessly. In Scala, every value is an object, and every operation is a method call. Novel constructs such as \emph{traits} and \emph{mixin composition} allow for more advanced object composition than most other languages according to its creator, Martin Odersky\cite{odersky2005scalable}. Scala facilitates the parameterisation of shape through higher-kinded types, generics take care of parameterisation by type, and parameterisation of computation can be handled using higher-order functions\cite{Oliveira08scalafor}. 
+
+In the following sections we present a problem within the area of generic programming in Scala and propose a methodology for tackling it. Finally, a tentative planning for the proposed work is supplied.
+
+\section{Problem}
+
+The aim of this project is to investigate Scala's potential in the domain of datatype-generic programming. For a long time, Haskell has been the go-to language for the exploration of datatype-generic programming\cite{Oliveira08scalafor}, which has resulted in the development of a considerable number of Haskell libraries for this purpose (e.g. GHC.Generics and Uniplate).  Each of these libraries comes with its own pros and cons.
+
+Scala has only recently been suggested as a language for the domain of datatype-generic programming, which leaves the area less developed: only one library supporting datatype-generic programming exists. This libary, \emph{Shapeless\footnote{\url{https://github.com/milessabin/shapeless}}}\cite{shapeless}, was originally written by Miles Sabin. According to its author, \say{Shapeless is a typeclass and dependent-type based generic programming library for Scala\footnote{In the context of Scala dependent types  refer to path-dependent types, which are more limited than full-blown dependent types}}. Similar to the existing Haskell libraries, we expect Shapeless to come with its own set of up- and downsides. We aim to investigate these strong and weak points, see where there is room for improvement in the domain of datatype-generic programming in Scala, and ultimately to implement these findings.
+
+\section{Methodology}
+
+A thorough comparison of various Haskell libraries for datatype-generic programming has been done by Rodriguez et al\cite{rodriguez2008comparing}. In this work, the authors collected from literature a series of typical scenarios where datatype-generic programming is used. Based on these findings, they identified the features that are needed in a library in order to be able to tackle such a scenario. Finally, they used these features as criteria for evaluating each of the Haskell libraries.
+
+\renewcommand{\labelitemii}{$\bullet$}
+\begin{figure}
+\begin{multicols}{3}
+\label{lab:criteria}
+\begin{itemize}
+\item[] \textit{Types}
+\begin{itemize}
+\item Universe size
+\item Subuniverse
+\end{itemize}
+\item[] \textit{Expressiveness}
+\begin{itemize}
+\item First-class generic functions
+\item Abstraction over type constructors
+\item Separate compilation
+\item Ad-hoc definitions for datatypes
+\item Ad-hoc definitions for constructors
+\item Extensibility
+\item Multiple arguments
+\item Multiple type representation arguments
+\item Constructor names
+\item Consumers, transformers and producers
+\end{itemize}
+\item[] \textit{Usability}
+\begin{itemize}
+\item Performance
+\item Portability
+\item Overhead of library use
+\item Ease of use and learning
+\end{itemize}
+\end{itemize}
+\end{multicols}
+\caption{Criteria overview}
+\end{figure}
+
+The starting point for this project is to examine how well the current approach for datatype-generic programming in Scala, and its implementation in the library Shapeless, scores on the criteria defined by \cite{rodriguez2008comparing} (Figure \ref{lab:criteria}, a precise definition can be found in the paper). In order to do so, we will closely follow the methodology presented by the authors, and port the collection of programs they use for benchmarking to Scala.
+
+Once we have clearly identified the approach to datatype-generic programming taken by Shapeless, and have established its strengths and weaknesses, we can proceed to investigate how this work can be improved upon.
+Even in Haskell, for which a great amount of research in the area  has been done, there is no clear agreement on how a library has to be designed in order to fulfill all the proposed criteria. Different approaches embrace different trade-offs. We do not expect that the only existing approach in Scala will fit all criteria perfectly. Upon figuring out which criteria Shapeless lacks, we will implement an approach providing exactly these criteria. 
+
+However, if it is the case that the Shapeless library does fit all the criteria, our contingency plan is to investigate alternative approaches to datatype-generic programming in Scala, and implement one, even though it will not necessarily improve on the existing one.
+
+Regardless of Shapeless' scores on the criteria, the expected result of this project is a new Scala library for datatype-generic programming.
+
+A good reference for starting the investigation, can be found in \cite{Oliveira08scalafor}, where the authors explore how some of the main approaches to datatype-generic programming in Haskell can be translated to Scala.
+
+\section{Planning}
+
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Task}                    & \textbf{Deadline}   \\ \hline
+Draft research proposal  & 24-11-2016 \\ \hline
+Research proposal       & 2-12-2016  \\ \hline
+Scala proficiency,  	& \\
+Getting acquainted with the internals of the Shapeless library		& 9-12-2016 \\ \hline
+Benchmarking Shapeless, Report & 15-12-2016 \\ \hline
+Prototype, Report      			& 12-1-2017  \\ \hline
+Finish report & 19-1-2017 \\ \hline
+Presentation      		& 26-1-2017  \\ \hline
+\end{tabular}
+
+\bibliographystyle{plain}
+\bibliography{Bibliography}
+
+\end{document}
