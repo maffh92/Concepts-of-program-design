@@ -57,6 +57,41 @@ trait Generic[G[_]] {
 }
 
 /*
+	GRep
+*/
+
+/*
+trait GRep[G[_],A] {
+	def grep : G[A]	
+}
+
+object GUnit extends GRep[G[_],Unit] {
+	def grep : G[Unit] = 
+}
+*/
+trait Rep[A]{
+	def rep[G[_]](implicit gg : Generic[G]) : G[A] 
+}
+
+implicit object RepUnit extends Rep[Unit]{
+	def rep[G[_]](implicit gg : Generic[G]) : G[Unit] = gg.unit 
+}
+
+implicit object RepChar extends Rep[Char]{
+	def rep[G[_]](implicit gg : Generic[G]) : G[Char] = gg.char 
+}
+
+implicit object RepInt extends Rep[Int]{
+	def rep[G[_]](implicit gg : Generic[G]) : G[Int] = gg.int 
+}
+
+class RepPlus[A,B] (implicit a : Rep[A],b : Rep[B]) extends Rep[Sum[A,B]]{
+	def rep[G[_]](implicit gg : Generic[G]) : G[Sum[A,B]] = {
+		gg.plus[A,B](a.rep,b.rep)
+	}
+}
+
+/*
 	Encode
 */
 
