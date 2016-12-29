@@ -1,5 +1,5 @@
 :paste
-import scala.language.higherKinds
+//import scala.language.higherKinds
 
 /*
 	Generic
@@ -43,6 +43,13 @@ def rList[A,G[_]](g : G[A])(implicit gg : Generic[G]): G[List[A]] = {
 	gg.view(listIso[A],() => gg.plus(gg.unit,gg.prod(g,rList[A,G](g))))
 }
 
+// Not sure if correct
+abstract class GenericList[G[_]](implicit gg: Generic[G]) {
+	def list[A]: G[A] => G[List[A]] = {
+		x => rList(x)
+	}	
+}
+
 type Arity = Int
 type Name = String
 
@@ -60,15 +67,41 @@ trait Generic[G[_]] {
 	GRep
 */
 
-/*
+
 trait GRep[G[_],A] {
 	def grep : G[A]	
 }
 
-object GUnit extends GRep[G[_],Unit] {
-	def grep : G[Unit] = 
+class GUnit[G[_]](implicit gg : Generic[G]) extends GRep[G,Unit] {
+	def grep : G[Unit] = gg.unit
 }
+
+class GInt[G[_]](implicit gg : Generic[G]) extends GRep[G,Int] {
+	def grep : G[Int] = gg.int
+}
+
+class GChar[G[_]](implicit gg : Generic[G]) extends GRep[G,Char] {
+	def grep : G[Char] = gg.char
+}
+
+class GPlus[A,B,G[_]](implicit gg : Generic[G], a : GRep[G,A], b : GRep[G,B]) extends GRep[G,Sum[A,B]] {
+	def grep : G[Sum[A,B]] = gg.plus[A,B](a.grep,b.grep)
+}
+
+
+class GProd[A,B,G[_]](implicit gg : Generic[G], a : GRep[G,A], b : GRep[G,B]) extends GRep[G,Product[A,B]] {
+	def grep : G[Product[A,B]] = gg.prod[A,B](a.grep,b.grep)
+}
+
+class GList[A,G[_]](implicit glg : GenericList[G], a : GRep[G,A]) extends GRep[G,List[A]] {
+	def grep : G[List[A]] = glg.list[A](a.grep)
+}
+
+
+/*
+	Rep
 */
+
 trait Rep[A]{
 	def rep[G[_]](implicit gg : Generic[G]) : G[A] 
 }
