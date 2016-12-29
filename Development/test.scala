@@ -17,7 +17,7 @@ class Sum[A,B]
 case class Inl[A,B](a : A) extends Sum[A,B]
 case class Inr[A,B](b : B) extends Sum[A,B]
 
-abstract class Iso[A,B]{
+trait Iso[A,B]{
 	def from : A => B
 	def to   : B => A
 } 
@@ -53,7 +53,7 @@ trait Generic[G[_]] {
 	def constr[A](n : Name, ar : Arity, a : G[A]) : G[A] = a
 	def char : G[Char]
 	def int  : G[Int]
-	def view[A,B](iso : Iso[B,A], a: G[A]) : G[B]	
+	def view[A,B](iso : Iso[B,A], a: () => G[A]) : G[B]	
 }
 
 /*
@@ -92,10 +92,10 @@ implicit object Encode extends Generic[Encode] {
 	}	
 	def char : Encode[Char] = new Encode[Char] {def encode_ = encodeChar}
 	def int = new Encode[Int]{def encode_ = encodeInt}
-	def view[A,B](iso : Iso[B,A],  a : Encode[A]) : Encode[B] = {
+	def view[A,B](iso : Iso[B,A],  a : () => Encode[A]) : Encode[B] = {
 		new Encode[B] 
 		{
-			def encode_ = x => a.encode_(iso.from(x))
+			def encode_ = x => a().encode_(iso.from(x))
 		}
 	}
 }
