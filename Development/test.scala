@@ -1,5 +1,6 @@
 :paste
-//import scala.language.higherKinds
+import scala.language.higherKinds
+import scala.language.postfixOps
 
 /*
 	Generic
@@ -9,38 +10,37 @@ sealed class Unit
 object Unit extends Unit
 
 // Use tuple?
-sealed trait Product[A,B]
-case class Prod[A,B](a: A, b : B) extends Product[A,B]
+case class Product[A,B](a: A, b : B)
 
 // Use Either?
-class Sum[A,B]
-case class Inl[A,B](a : A) extends Sum[A,B]
-case class Inr[A,B](b : B) extends Sum[A,B]
+class Plus[A,B]
+case class Inl[A,B](a : A) extends Plus[A,B]
+case class Inr[A,B](b : B) extends Plus[A,B]
 
 trait Iso[A,B]{
 	def from : A => B
 	def to   : B => A
 } 
 
-def fromList[A] : (List[A] => Sum[Unit,Product[A,List[A]]]) = l =>
+def fromList[A] : (List[A] => Plus[Unit,Product[A,List[A]]]) = l =>
 	l match {
 		case Nil 	   => Inl(Unit)
-		case (x :: xs) => Inr(Prod(x,xs))
+		case (x :: xs) => Inr(Product(x,xs))
 	}
 
-def toList[A] : (Sum[Unit,Product[A,List[A]]] => List[A]) = r =>	
+def toList[A] : (Plus[Unit,Product[A,List[A]]] => List[A]) = r =>	
 	r match {
 		case Inl(_) => Nil
-		case Inr(Prod(x,xs)) => x :: xs		
+		case Inr(Product(x,xs)) => x :: xs		
 	}
 
-def listIso[A]  = new Iso[List[A],Sum[Unit,Product[A,List[A]]]] {
+def listIso[A]  = new Iso[List[A],Plus[Unit,Product[A,List[A]]]] {
 	def from = fromList
 	def to = toList
 }
 
 def rList[A,G[_]](g : G[A])(implicit gg : Generic[G]): G[List[A]] = {
-	gg.view(listIso[A],() => gg.plus(gg.unit,gg.prod(g,rList[A,G](g))))
+	gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,rList[A,G](g))))
 }
 
 // Not sure if correct
@@ -53,18 +53,9 @@ abstract class GenericList[G[_]](implicit gg: Generic[G]) {
 type Arity = Int
 type Name = String
 
-trait Generic[G[_]] {
-	def unit : G[Unit]
-	def plus[A,B](a : G[A], b : G[B]) : G[Sum[A,B]]
-	def prod[A,B](a : G[A], b : G[B]) : G[Product[A,B]]
-	def constr[A](n : Name, ar : Arity, a : G[A]) : G[A] = a
-	def char : G[Char]
-	def int  : G[Int]
-	def view[A,B](iso : Iso[B,A], a: () => G[A]) : G[B]	
-}
 
 /*
-	GRep
+	 
 */
 
 
@@ -84,13 +75,13 @@ class GChar[G[_]](implicit gg : Generic[G]) extends GRep[G,Char] {
 	def grep : G[Char] = gg.char
 }
 
-class GPlus[A,B,G[_]](implicit gg : Generic[G], a : GRep[G,A], b : GRep[G,B]) extends GRep[G,Sum[A,B]] {
-	def grep : G[Sum[A,B]] = gg.plus[A,B](a.grep,b.grep)
+class GPlus[A,B,G[_]](implicit gg : Generic[G], a : GRep[G,A], b : GRep[G,B]) extends GRep[G,Plus[A,B]] {
+	def grep : G[Plus[A,B]] = gg.plus[A,B](a.grep,b.grep)
 }
 
 
-class GProd[A,B,G[_]](implicit gg : Generic[G], a : GRep[G,A], b : GRep[G,B]) extends GRep[G,Product[A,B]] {
-	def grep : G[Product[A,B]] = gg.prod[A,B](a.grep,b.grep)
+class Gproduct[A,B,G[_]](implicit gg : Generic[G], a : GRep[G,A], b : GRep[G,B]) extends GRep[G,Product[A,B]] {
+	def grep : G[Product[A,B]] = gg.product[A,B](a.grep,b.grep)
 }
 
 class GList[A,G[_]](implicit glg : GenericList[G], a : GRep[G,A]) extends GRep[G,List[A]] {
@@ -107,21 +98,47 @@ trait Rep[A]{
 }
 
 implicit object RepUnit extends Rep[Unit]{
-	def rep[G[_]](implicit gg : Generic[G]) : G[Unit] = gg.unit 
+	def rep[G[_]](implicit gg : Generic[G]) : G[Unit] = gg unit 
 }
 
 implicit object RepChar extends Rep[Char]{
-	def rep[G[_]](implicit gg : Generic[G]) : G[Char] = gg.char 
+	def rep[G[_]](implicit gg : Generic[G]) : G[Char] = gg char 
 }
 
 implicit object RepInt extends Rep[Int]{
-	def rep[G[_]](implicit gg : Generic[G]) : G[Int] = gg.int 
+	def rep[G[_]](implicit gg : Generic[G]) : G[Int] = gg int 
 }
 
-class RepPlus[A,B] (implicit a : Rep[A],b : Rep[B]) extends Rep[Sum[A,B]]{
-	def rep[G[_]](implicit gg : Generic[G]) : G[Sum[A,B]] = {
-		gg.plus[A,B](a.rep,b.rep)
+implicit class RepPlus[A,B] (a : Rep[A])(implicit b : Rep[B]) extends Rep[Plus[A,B]]{
+	def rep[G[_]](implicit gg : Generic[G]) : G[Plus[A,B]] = {
+		gg plus[A,B](a.rep,b.rep)
 	}
+}
+
+class RepProduct[A,B] (implicit a : Rep[A],b : Rep[B]) extends Rep[Product[A,B]]{
+	def rep[G[_]](implicit gg : Generic[G]) : G[Product[A,B]] = {
+		gg product[A,B](a.rep,b.rep)
+	}
+}
+
+
+class RepList[A] (implicit a : Rep[A]) extends Rep[List[A]]{
+	def rep[G[_]](implicit gg : Generic[G]) : G[List[A]] = {
+		rList(a.rep)
+	}
+}
+
+
+/*
+ FREP
+*/
+
+trait FRep[G[_],F[_]]{
+	def frep[A](g1 : G[A]) : G[F[A]]
+}
+
+trait FRep2[G[_,_],F[_]]{
+	def frep2[A,B](g1 : G[A,B]) : G[F[A],F[B]]
 }
 
 /*
@@ -133,15 +150,15 @@ abstract class Encode[A] {
 }
 
 sealed class Bit
-case class One() extends Bit
-case class Zero() extends Bit
-object One extends Bit
-object Zero extends Bit
+case object One extends Bit
+case object Zero extends Bit
+
+
 
 implicit object Encode extends Generic[Encode] {
 	def unit : Encode[Unit] = new Encode[Unit] {def encode_ = const(Nil)}
-	def plus[A,B](a : Encode[A], b : Encode[B]) : Encode[Sum[A,B]] = {
-		new Encode[Sum[A,B]] 
+	def plus[A,B](a : Encode[A], b : Encode[B]) : Encode[Plus[A,B]] = {
+		new Encode[Plus[A,B]] 
 			{
 				def encode_ = x => x match {
 					case Inl(l) => Zero :: a.encode_(l) 
@@ -149,11 +166,11 @@ implicit object Encode extends Generic[Encode] {
 			}			
 		}
 	}
-	def prod[A,B](a : Encode[A], b : Encode[B]) : Encode[Product[A,B]] = {
+	def product[A,B](a : Encode[A], b : Encode[B]) : Encode[Product[A,B]] = {
 		new Encode[Product[A,B]]
 			{
 				def encode_ = x => x match {
-					case  Prod(l,r) => (a.encode_(l)) ++ (b.encode_(r))
+					case  Product(l,r) => (a.encode_(l)) ++ (b.encode_(r))
 				}
 				
 			}
@@ -191,3 +208,97 @@ def encodeInt(x : Int) : List[Bit] = {
 */
 
 def const[A,B](a : A)(b : B) : A = a
+def id[A](a : A) : A = a
+
+
+
+/*
+  Map functions
+*/
+
+trait Map[A,B]{ 
+	def selMap : A => B
+}
+
+
+trait Generic[G[_]] {
+	def unit : G[Unit]
+	def plus[A,B](a : G[A], b : G[B]) : G[Plus[A,B]]
+	def product[A,B](a : G[A], b : G[B]) : G[Product[A,B]]
+	def constr[A](n : Name, ar : Arity, a : G[A]) : G[A] = a
+	def char : G[Char]
+	def int  : G[Int]
+	def view[A,B](iso : Iso[B,A], a: () => G[A]) : G[B]	
+}
+
+
+trait Generic1[G[_,_]] {
+	def unit : G[Unit,Unit]
+	def plus[A1,A2,B1,B2](a : G[A1,A2], b : G[B1,B2]) : G[Plus[A1,B1],Plus[A2,B2]]
+	def product[A1,A2,B1,B2](a : G[A1,A2], b : G[B1,B2]) : G[Product[A1,B1],Product[A2,B2]]
+	def constr[A,Z](n : Name, ar : Arity, a : G[A,Z]) : G[A,Z] = a
+	def char : G[Char,Char]
+	def int  : G[Int,Int]
+	def view[A1,A2,B1,B2](iso1 : Iso[A2,A1],iso2 : Iso[B2,B1], a: () => G[A1,B1]) : G[A2,B2]	
+}
+
+
+trait myGeneric1[Result] extends Generic1[Map]{
+
+	def idMap[A] : Map[A,A] = new Map[A,A]{def selMap = id}
+
+	def unit = idMap
+	def char = idMap
+	def int  = idMap
+
+	def product[A1,A2,B1,B2](ra : Map[A1,A2], rb : Map[B1,B2]) = {
+		new Map[Product[A1,B1],Product[A2,B2]]{
+			def selMap = rprodMap(ra)(rb)
+		}
+	}
+
+	def plus[A1,A2,B1,B2](ra : Map[A1,A2], rb : Map[B1,B2]) = {
+		new Map[Plus[A1,B1],Plus[A2,B2]]{
+			def selMap = rsumMap(ra)(rb)
+		}
+	}
+
+	def view[A1,A2,B1,B2](iso1 : Iso[A2,A1],iso2 : Iso[B2,B1], a: Map[A1,B1]) : Map[A2,B2] =
+	{
+		new Map[A2,B2]{
+			def selMap = rTypeMap(iso1)(iso2)(a)
+		}
+	}	
+
+
+	def rprodMap[A1,A2,B1,B2](ra : Map[A1,A2])
+		(rb : Map[B1,B2])(product : Product[A1,B1]) : Product[A2,B2] = {
+			product match{
+				case Product(a,b) => Product(ra.selMap(a),rb.selMap(b))
+			}
+		}
+
+
+	def rsumMap[A1,A2,B1,B2]
+			(ra : Map[A1,A2])(rb : Map[B1,B2])(plus : Plus[A1,B1]) : Plus[A2,B2] = {
+				plus match{
+					case Inl(x) => Inl(ra.selMap(x))
+					case Inr(x) => Inr(rb.selMap(x))
+				}
+			}
+
+
+
+	def rTypeMap[B,R,D,A](iso1 : Iso[B,R])(iso2 : Iso[D,A])(ra : Map[R,A])(b : B) :  D = {
+		iso2.to(ra.selMap(iso1.from(b)))
+	}
+}
+
+def map[A,B,F[_]](f : A => B)(functor : F[A])(implicit rep : FRep2[Map, F]) : F[B] = {
+		val fMap = new Map[A,B]{
+			def selMap = f
+		}
+		return(rep frep2(fMap) selMap(functor))
+}
+
+
