@@ -347,13 +347,13 @@ def rtypeCrush[A,B,D](iso1 : Iso[B,A])(ra : Crush[D,A])(asc : Assoc)(b : B)(d : 
 }
 
 
-trait genericCrush[A] extends Generic[({type AB[B] = Crush[B,A]})#AB]{
+trait genericCrush[B] extends Generic[({type AB[A] = Crush[B,A]})#AB]{
 
  // rsum     ra rb = Crush $ rsumCrush ra rb
  //  rprod    ra rb = Crush $ rprodCrush ra rb
  //  rtype ep ra    = Crush $ rtypeCrush ep ra
 
-	def idCrush[B] = 
+	def idCrush[A] = 
 	{
 		new Crush[B,A]{
 			def selCrush = (_:Any) => (_:Any) => (x : B) => id[B](x)
@@ -368,11 +368,10 @@ trait genericCrush[A] extends Generic[({type AB[B] = Crush[B,A]})#AB]{
 	// def plus(ra : _)
 // 
 
-	def plus[X,Y,B](ra : Crush[B,X], rb : Crush[B,Y]) = {
-		new Crush[B,Plus[X,Y]]{
-			def selCrush = rsumCrush(ra)(rb)
+	def plus[X,Y,D](ra : Crush[D,X], rb : Crush[D,Y]) = new Crush[B,Plus[X,Y]]{
+			def selCrush = (x : Assoc) => (plus : Plus[X,Y]) => (d : D) => rsumCrush[X,Y,D](ra)(rb)(x)(plus)(d)
 		}
-	}
+	
 	// def product[A,B](a : G[A], b : G[B]) : G[Product[A,B]]
 
 
