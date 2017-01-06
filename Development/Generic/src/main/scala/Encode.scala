@@ -1,6 +1,7 @@
 import GenericObject._
 
 object EncodeObject {
+
   abstract class Encode[A] {
     def encode_ :  A => List[Bit]
   }

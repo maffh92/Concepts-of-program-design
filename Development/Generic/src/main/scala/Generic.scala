@@ -137,6 +137,9 @@ object GenericObject {
     def frep2[A,B](g1 : G[A,B]) : G[F[A],F[B]]
   }
 
+  /*
+	Auxiliary functions
+*/
   def const[A,B](a : A)(b : B) : A = a
   def id[A](a : A) : A = a
 

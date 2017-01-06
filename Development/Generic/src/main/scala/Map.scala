@@ -1,11 +1,12 @@
 import GenericObject._
 
-object Map {
+object MapObject {
+
   trait Map[A,B]{
     def selMap : A => B
   }
 
-  trait myGeneric2[Result] extends Generic2[Map]{
+  trait myGeneric2 extends Generic2[Map]{
 
     def idMap[A] : Map[A,A] = new Map[A,A]{def selMap = id}
 
