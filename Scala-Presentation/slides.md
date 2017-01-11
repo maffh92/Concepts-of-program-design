@@ -10,7 +10,7 @@ sansfont: Ubuntu Light
 # Introduction
 
 * Background information
-* Scala
+* Scalat
 * Conclusion
 
 ---
@@ -349,11 +349,209 @@ case class Family[P >: Parent, C <: Child]
 ...
 
 
-# Covariance
+# Dynamic semantics
 
-example
+How does Scala evaluate expressions?
+
+* Strict
+* Lazy
 
 ---
+
+# Dynamic semantics
+```scala
+def cyclicStream(x:Int): Stream[Int] = {
+  x #:: cyclicStream(x-1)
+}              
+def cyclicList(x:Int): List[Int] = {
+  x :: cyclicList(x-1)
+}
+scala> cyclicStream(Int.MaxValue)
+   final val MaxValue: Int(2147483647)
+
+scala> cyclicStream(Int.MaxValue)
+res1: Stream[Int] = Stream(2147483647, ?)
+
+scala> cyclicList(Int.MaxValue)
+java.lang.StackOverflowError
+  at .cyclicList(<console>:11)
+```
+
+---
+
+
+# Dynamic semantics
+```scala
+def call1(x: Int) = {
+  println("x1=" + x)
+  println("x2=" + x)
+}
+def call2(x: => Int) = {
+  println("x1=" + x)
+  println("x2=" + x)
+}
+def call3(x: () => Int) = {
+  println("x1=" + x())
+  println("x2=" + x())
+}
+```
+
+---
+
+# Dynamic semantics
+```scala
+def something() : Int = {
+  println("calling something")
+  1
+}
+```
+
+---
+
+# Dynamic semantics
+```scala
+def something() : Int = {
+  println("calling something")
+  1
+}
+def call1(x: Int) = {
+  println("x1=" + x)
+  println("x2=" + x)
+}
+scala> call1(something())
+calling something
+x1=1
+x2=1
+```
+
+---
+
+# Dynamic semantics
+```scala
+def something() : Int = {
+  println("calling something")
+  1
+}
+def call2(x: => Int) = {
+  println("x1=" + x)
+  println("x2=" + x)
+}
+scala> call2(something())
+calling something
+x1=1
+calling something
+x2=1
+
+```
+
+---
+
+# Dynamic semantics
+```scala
+def something() : Int = {
+  println("calling something")
+  1
+}
+def call3(x: () => Int) = {
+  println("x1=" + x())
+  println("x2=" + x())
+}
+scala> call3(something())
+<console>:14: error: type mismatch;
+ found   : Int
+ required: () => Int
+
+```
+
+---
+
+# Dynamic semantics
+```scala
+def something() : Int = {
+  println("calling something")
+  1
+}
+def call3(x: () => Int) = {
+  println("x1=" + x())
+  println("x2=" + x())
+}
+scala> scala> call3(() => something())
+calling something
+x1=1
+calling something
+x2=1
+
+
+```
+
+---
+
+# Dynamic semantics - Lazy keyword
+```scala
+scala> lazy val number1 = { println("I am a number "); 13 }
+number1: Int = <lazy>
+
+scala> val number2 = { println("I am a number: "); 20 }
+I am a number: 
+number2: Int = 20
+
+
+```
+
+---
+
+# Dynamic semantics - Lazy keyword
+```scala
+scala> lazy val number1 = { println("I am a number "); 13 }
+number1: Int = <lazy>
+
+scala> number1
+I am a number 
+res0: Int = 13
+
+scala> number1
+res2: Int = 13
+
+
+```
+---
+
+# Dynamic semantics - Lazy keyword
+```scala
+scala> lazy val number1 = { println("I am a number "); 13 }
+number1: Int = <lazy>
+
+scala> val number2 = { println("I am a number: "); 20 }
+I am a number: 
+number2: Int = 20
+
+scala> number2
+res1: Int = 20
+
+scala> number2
+res3: Int = 20
+```
+
+---
+
+
+# Dynamic semantics - recap
+
+* Call by value
+* Call by name
+* Call by need
+
+---
+
+# Java interoptibility
+
+* JVM
+* Use Java form Scala - Easy
+* Use Scala from Java - Harder
+* Call by need
+
+---
+
 
 # Questions
 

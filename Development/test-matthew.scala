@@ -22,32 +22,54 @@ trait Iso[A,B]{
 	def to   : B => A
 } 
 
-def fromList[A] : (List[A] => Plus[Unit,Product[A,List[A]]]) = l =>
+type ListS[A] = Plus[Unit,Product[A,List[A]]]
+
+def fromList[A] : (List[A] => ListS[A]) = l =>
 	l match {
 		case Nil 	   => Inl(Unit)
 		case (x :: xs) => Inr(Product(x,xs))
 	}
 
-def toList[A] : (Plus[Unit,Product[A,List[A]]] => List[A]) = r =>	
+def toList[A] : (ListS[A] => List[A]) = r =>	
 	r match {
 		case Inl(_) => Nil
 		case Inr(Product(x,xs)) => x :: xs		
 	}
 
-def listIso[A]  = new Iso[List[A],Plus[Unit,Product[A,List[A]]]] {
+def listIso[A]  = new Iso[List[A],ListS[A]] {
 	def from = fromList
 	def to = toList
 }
 
-def rList[A,G[_]](g : G[A])(implicit gg : Generic[G]): G[List[A]] = {
-	gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,rList[A,G](g))))
+def frepList[A,G[_]](g : G[A])(implicit gg : Generic[G]): G[List[A]] = {
+	gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepList[A,G](g))))
 }
+
+
+def frep2List[A,B,G[_,_]](g : G[A,B])(implicit gg : Generic2[G]): G[List[A],List[B]] = {
+	gg.view(listIso[A],listIso[B],() => gg.plus(gg.unit,gg.product(g,frep2List[A,B,G](g))))
+}
+
+
+
+// frep2List :: (Generic g) => g a -> g [a]
+// frep2List ra =
+//   rtype2
+//     epList
+    // (rcon conNil runit `rsum` rcon conCons (ra `rprod` frepList ra))
+
+// -- | Representation of lists for 'frep2'.
+// frep2List :: (Generic2 g) => g a b -> g [a] [b]
+// frep2List ra =
+//   rtype2
+//     epList epList
+//     (rcon2 conNil runit2 `rsum2` rcon2 conCons (ra `rprod2` frep2List ra))
 
 // Not sure if correct
 abstract class GenericList[G[_]](implicit gg: Generic[G]) {
 	def list[A]: G[A] => G[List[A]] = {
-		x => rList(x)
-	}	
+		x => frepList(x)
+	}
 }
 
 type Arity = Int
@@ -105,6 +127,19 @@ implicit object RepChar extends Rep[Char]{
 	def rep[G[_]](implicit gg : Generic[G]) : G[Char] = gg char 
 }
 
+
+// instance (Generic2 g) => FRep2 g [] where
+//   frep2 = frep2List
+
+
+// abstract class FRep2[G[_,_],F[_]]{
+// 	def frep2[A,B](g1 : G[A,B]) : G[F[A],F[B]]
+// }
+
+
+// instance (Generic g) => Rep g Integer where
+//   rep = rinteger
+
 implicit object RepInt extends Rep[Int]{
 	def rep[G[_]](implicit gg : Generic[G]) : G[Int] = gg int 
 }
@@ -124,9 +159,11 @@ class RepProduct[A,B] (implicit a : Rep[A],b : Rep[B]) extends Rep[Product[A,B]]
 
 class RepList[A] (implicit a : Rep[A]) extends Rep[List[A]]{
 	def rep[G[_]](implicit gg : Generic[G]) : G[List[A]] = {
-		rList(a.rep)
+		frepList(a.rep)
 	}
 }
+
+
 
 
 /*
@@ -232,18 +269,18 @@ trait Generic[G[_]] {
 }
 
 
-trait Generic1[G[_,_]] {
+trait Generic2[G[_,_]] {
 	def unit : G[Unit,Unit]
 	def plus[A1,A2,B1,B2](a : G[A1,A2], b : G[B1,B2]) : G[Plus[A1,B1],Plus[A2,B2]]
 	def product[A1,A2,B1,B2](a : G[A1,A2], b : G[B1,B2]) : G[Product[A1,B1],Product[A2,B2]]
 	def constr[A,Z](n : Name, ar : Arity, a : G[A,Z]) : G[A,Z] = a
 	def char : G[Char,Char]
 	def int  : G[Int,Int]
-	def view[A1,A2,B1,B2](iso1 : Iso[A2,A1],iso2 : Iso[B2,B1], a: G[A1,B1]) : G[A2,B2]	
+	def view[A1,A2,B1,B2](iso1 : Iso[A2,A1],iso2 : Iso[B2,B1], a: () => G[A1,B1]) : G[A2,B2]	
 }
 
 
-object myGeneric1 extends Generic1[Map]{
+implicit object MapC extends Generic2[Map]{
 
 	def idMap[A] : Map[A,A] = new Map[A,A]{def selMap = id}
 
@@ -263,10 +300,10 @@ object myGeneric1 extends Generic1[Map]{
 		}
 	}
 
-	def view[A1,A2,B1,B2](iso1 : Iso[A2,A1],iso2 : Iso[B2,B1], a: Map[A1,B1]) : Map[A2,B2] =
+	def view[A1,A2,B1,B2](iso1 : Iso[A2,A1],iso2 : Iso[B2,B1],a: () => Map[A1,B1]) : Map[A2,B2] =
 	{
 		new Map[A2,B2]{
-			def selMap = rTypeMap(iso1)(iso2)(a)
+			def selMap = rTypeMap(iso1)(iso2)(a())
 		}
 	}	
 
@@ -322,14 +359,14 @@ trait Crush[B,A]{
 // rtypeCrush :: EP b a -> Crush d a -> Assoc -> b -> d -> d
 // rtypeCrush ep ra asc = selCrush ra asc . from ep
 
-def rsumCrush[A,B,D](ra : Crush[D,A])(rb : Crush[D,B])(asc : Assoc)(plus : Plus[A,B])(d : D){
+def rsumCrush[A,B,D](ra : Crush[D,A])(rb : Crush[D,B])(asc : Assoc)(plus : Plus[A,B])(d : D) : D = {
 	plus match{
 		case Inl(a) => ra.selCrush(asc)(a)(d)
 		case Inr(b) => rb.selCrush(asc)(b)(d)
 	}
 }
 
-def rprodCrush[A,B,D](ra : Crush[D,A])(rb : Crush[D,B])(asc : Assoc)(product : Product[A,B])(d : D){
+def rprodCrush[A,B,D](ra : Crush[D,A])(rb : Crush[D,B])(asc : Assoc)(product : Product[A,B])(d : D) : D = {
 	product match{
 		case Product(a,b) => {
 				asc match{
@@ -342,21 +379,21 @@ def rprodCrush[A,B,D](ra : Crush[D,A])(rb : Crush[D,B])(asc : Assoc)(product : P
 }
 
 
-def rtypeCrush[A,B,D](iso1 : Iso[B,A])(ra : Crush[D,A])(asc : Assoc)(b : B)(d : D){
+def rtypeCrush[A,B,D](iso1 : Iso[B,A])(ra : Crush[D,A])(asc : Assoc)(b : B)(d : D) : D  = {
 	ra.selCrush(asc)(iso1.from(b))(d)
 }
 
+object  crushC {
+    implicit def mkCrush[B] : crushC[B] = new crushC[B]
+}
 
-trait genericCrush[B] extends Generic[({type AB[A] = Crush[B,A]})#AB]{
+class crushC[B]extends Generic[({type AB[A] = Crush[B,A]})#AB]{
 
- // rsum     ra rb = Crush $ rsumCrush ra rb
- //  rprod    ra rb = Crush $ rprodCrush ra rb
- //  rtype ep ra    = Crush $ rtypeCrush ep ra
 
 	def idCrush[A] = 
 	{
 		new Crush[B,A]{
-			def selCrush = (_:Any) => (_:Any) => (x : B) => id[B](x)
+			override def selCrush = _ => _ => id
 		}
 	}
 
@@ -365,14 +402,164 @@ trait genericCrush[B] extends Generic[({type AB[A] = Crush[B,A]})#AB]{
 	def unit = idCrush
 	def char = idCrush
 	def int  = idCrush
-	// def plus(ra : _)
+	
 // 
 
-	def plus[X,Y,D](ra : Crush[D,X], rb : Crush[D,Y]) = new Crush[B,Plus[X,Y]]{
-			def selCrush = (x : Assoc) => (plus : Plus[X,Y]) => (d : D) => rsumCrush[X,Y,D](ra)(rb)(x)(plus)(d)
+	def plus[X,Y](ra : Crush[B,X], rb : Crush[B,Y]) = 
+	{
+		new Crush[B,Plus[X,Y]]{
+			def selCrush = rsumCrush[X,Y,B](ra)(rb)
 		}
-	
-	// def product[A,B](a : G[A], b : G[B]) : G[Product[A,B]]
+	}
 
+	def product[X,Y](ra : Crush[B,X], rb : Crush[B,Y]) = 
+	{
+		new Crush[B,Product[X,Y]]{
+			def selCrush = rprodCrush[X,Y,B](ra)(rb)
+		}
+	}
+	
+
+	def view[X,Y](ra : Crush[B,X], rb : Crush[B,Y]) = 
+	{
+		new Crush[B,Product[X,Y]]{
+			def selCrush = rprodCrush[X,Y,B](ra)(rb)
+		}
+	}
+	// def product[A,B](a : G[A], b : G[B]) : G[Product[A,B]]
+	def view[X,Y](iso1 : Iso[Y,X], a: () => Crush[B,X]) : Crush[B,Y] = {
+		new Crush[B,Y]{
+			def selCrush = rtypeCrush[X,Y,B](iso1)(a())
+		}
+	}
 
 }
+
+
+/* 
+Representations
+
+*/
+
+/*
+
+	Compare
+
+*/
+
+class Ordering
+case object LT extends Ordering
+case object EQ extends Ordering
+case object GT extends Ordering
+
+trait Compare[A]{
+	def selCompare : A => A => Ordering
+}
+
+def rsumCompare[A,B](ra : Compare[A])(rb : Compare[B])(plus1 : Plus[A,B])(plus2 : Plus[A,B]) : Ordering = {
+	plus1 match {
+		case Inl(a1) => {
+			plus2 match {
+				case Inl(a2) => ra.selCompare(a1)(a2)
+				case Inr(_) => LT
+			}
+		}
+		case Inr(b1) => {
+			plus2 match {
+				case Inl(_) => GT
+				case Inr(b2) => rb.selCompare(b1)(b2)
+			}
+		}
+	}
+}
+
+
+def rprodCompare[A,B](ra : Compare[A])(rb : Compare[B])(product1 : Product[A,B])(product2 : Product[A,B]) : Ordering = {
+	product1 match {
+		case Product(a1,b1) => product2 match{
+			case Product(a2,b2) => ra.selCompare(a1)(a2) match{
+				case EQ => rb.selCompare(b1)(b2)
+				case other => other
+			}
+		}
+	}
+}
+
+
+def rtypeCompare[A,B](ep : Iso[A,B])(rb : Compare[B])(a1 : A)(a2 : A) : Ordering = {
+	rb.selCompare(ep.from(a1))(ep.from(a2))
+}
+
+trait CompareC extends Generic[Compare]{
+	// def compareFunction[A] = new Compare[A]{
+	// 	def selCompare = compare
+	// }
+	// def unit : Compare[Unit] = compareFunction
+	// def char : Compare[Char] = compareFunction
+	// def int  : Compare[Int] = compareFunction
+
+
+	def plus[A,B](ra : Compare[A], rb : Compare[B]) : Compare[Plus[A,B]] = {
+		new Compare[Plus[A,B]]{
+			def selCompare = rsumCompare(ra)(rb)
+		}
+	}
+	
+	def product[A,B](ra : Compare[A], rb : Compare[B]) : Compare[Product[A,B]] = {
+		new Compare[Product[A,B]]{
+			def selCompare = rprodCompare(ra)(rb)
+		}
+	}
+	def view[A,B](iso1 : Iso[B,A], ra: () => Compare[A]) : Compare[B] = {
+		new Compare[B]{
+			def selCompare = rtypeCompare(iso1)(ra())
+		}
+	}	
+}
+
+
+
+
+implicit object Rep2List extends FRep2[Map,List]{
+	def frep2[A,B](g1: Map[A,B]) : Map[List[A],List[B]] = {
+		frep2List(g1)
+	}
+}
+
+
+
+// def crush[B,A,F[_]](asc : Assoc)(f : A => B => B)(z : B)(x : F[A])(implicit rep : FRep[({type AB[A] = Crush[B,A]})#AB,F]): B = {
+// def fCrush = new Crush[B,A]{ 
+//   override def selCrush= _ => f
+// }
+// return(rep frep(fCrush).selCrush(asc)(x)(z))
+// }
+
+
+
+class CrushFunction[B,F[_]](asc : Assoc)(z : B)(implicit rep : FRep[({type AB[A] = Crush[B,A]})#AB,F]){
+	def crush[A](f : A => B => B)(x : F[A]) : B = {
+		val crushVal = new Crush[B,A]{
+	  		override def selCrush:  Assoc => A => B => B = _ => f
+		}
+		return(rep.frep(crushVal).selCrush(asc)(x)(z))
+	}
+}
+
+
+// trait tmp{
+//   def crush[A,B,F[_]](asc : Assoc)(f : A => B => B)(z : B)(x : F[A])(implicit rep : FRep2[Crush,F]): B = {
+//     def fCrush = new Crush[B,A]{
+//       	def selCrush = _ => f
+//     }
+//     return(rep frep2(fCrush).selCrush(asc)(x)(z))
+//   }
+
+// }
+
+// def map[A,B,F[_]](f : A => B)(functor : F[A])(implicit rep : FRep2[Map, F]) : F[B] = {
+// 		val fMap = new Map[A,B]{
+// 			def selMap = f
+// 		}
+// 		return(rep frep2(fMap) selMap(functor))
+// }
