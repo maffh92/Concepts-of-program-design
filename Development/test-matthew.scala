@@ -518,33 +518,101 @@ trait CompareC extends Generic[Compare]{
 }
 
 
-
-
-implicit object Rep2List extends FRep2[Map,List]{
-	def frep2[A,B](g1: Map[A,B]) : Map[List[A],List[B]] = {
+implicit def Rep2List[G[_,_]](implicit g : Generic2[G]) : FRep2[G,List] = new FRep2[G,List] {
+	def frep2[A,B](g1 : G[A,B]) : G[List[A], List[B]] = {
 		frep2List(g1)
 	}
 }
 
 
 
-// def crush[B,A,F[_]](asc : Assoc)(f : A => B => B)(z : B)(x : F[A])(implicit rep : FRep[({type AB[A] = Crush[B,A]})#AB,F]): B = {
-// def fCrush = new Crush[B,A]{ 
-//   override def selCrush= _ => f
-// }
-// return(rep frep(fCrush).selCrush(asc)(x)(z))
-// }
-
-
-
-class CrushFunction[B,F[_]](asc : Assoc)(z : B)(implicit rep : FRep[({type AB[A] = Crush[B,A]})#AB,F]){
-	def crush[A](f : A => B => B)(x : F[A]) : B = {
-		val crushVal = new Crush[B,A]{
-	  		override def selCrush:  Assoc => A => B => B = _ => f
-		}
-		return(rep.frep(crushVal).selCrush(asc)(x)(z))
+implicit def RepList[G[_]](implicit g : Generic[G]) : FRep[G,List] = new FRep[G,List] {
+	def frep[A](g1 : G[A]) : G[List[A]] = {
+		frepList(g1)
 	}
 }
+
+
+
+def crush[B,A,F[_]](asc : Assoc)(f : A => B => B)(z : B)(x : F[A])(implicit rep : FRep[({type AB[A] = Crush[B,A]})#AB,F]): B = {
+	val fCrush = new Crush[B,A]{ 
+	  override def selCrush= _ => f
+	}
+ 	rep.frep(fCrush).selCrush(asc)(x)(z)
+}
+
+def crushr[B,A,F[_]](f : A => B => B)(z : B)(x : F[A])(implicit rep : FRep[({type AB[A] = Crush[B,A]})#AB,F]): B = {
+	crush(AssocRight)(f)(z)(x)
+}
+
+def crushl[B,A,F[_]](f : A => B => B)(z : B)(x : F[A])(implicit rep : FRep[({type AB[A] = Crush[B,A]})#AB,F]): B = {
+	crush(AssocLeft)(f)(z)(x)
+}
+
+// def plusFunction[A](x : String)(y : String) = x + y
+
+def sum[X,A,F[_]](x : F[A])(implicit number : Number[A], rep : FRep[({type AB[X] = Crush[A,X]})#AB,F]) : scala.Unit = {
+	val som = crushr(number.plus)(number.empty)(x)
+}
+
+trait Number[A] {
+  // an identity element
+  def empty: A
+  // an associative operation
+  def plus(x: A)(y: A): A
+  def multiple(x: A)(y: A): A
+}
+
+implicit val IntMonoid = new Number[Int] {
+    def empty = 0
+    def plus(x: Int)(y: Int) = x + y
+    def multiple(x: Int)(y: Int) = x * y
+}
+
+
+
+// implicit object DoubleN1 extends Number[Double] {
+//     val empty: Double = 0.0
+//     def plus(x: Number[Double])(y: Number[Double]) = x.plus(y.empty)
+// }
+
+// implicit class DoubleN(x: Double) extends NumberLike[Double] {
+//     def get: Double = x
+//     def minus(y: NumberLike[Double]) = DoubleN(x - y.get)
+//     def plus(y: NumberLike[Double]) = DoubleN(x + y.get)
+//     def divide(y: Int) = DoubleN(x / y)
+// }
+
+// implicit class IntN(x: Int) extends NumberLike[Int] {
+//     def get: Int = x
+//     def minus(y: NumberLike[Int]) = IntN(x - y.get)
+//     def plus(y: NumberLike[Int]) = IntN(x + y.get)
+//     def divide(y: Int) = IntN(x / y)
+// }
+
+
+
+// def plusNumber[A,B](x : NumberLike[A])(y :  NumberLike[A]) : Any = {
+// 	x plus y get
+// }
+
+
+// class CrushFunction[B,F[_]](asc : Assoc)(z : B)(implicit rep : FRep[({type AB[A] = Crush[B,A]})#AB,F]){
+// 	def crush[A](f : A => B => B)(x : F[A]) : B = {
+// 		val crushVal = new Crush[B,A]{
+// 	  		override def selCrush:  Assoc => A => B => B = _ => f
+// 		}
+// 		return(rep.frep(crushVal).selCrush(asc)(x)(z))
+// 	}
+// }
+
+
+// def crush[B,A,F[_]](asc : Assoc)(f : A => B => B)(z : B)(x : F[A])(implicit rep : FRep[({type AB[X] = Crush[B,X]})#AB,F]): B = {
+//     def fCrush = new Crush[B,A]{ 
+//       override def selCrush: Assoc => A => B => B = _ => f
+//     }
+//     return(rep.frep(fCrush).selCrush(asc)(x)(z))
+// }
 
 
 // trait tmp{
