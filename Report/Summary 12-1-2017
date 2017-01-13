@@ -1,10 +1,24 @@
-Summary
+Summary on 12-01-2017
 
-We started working on implementing the generic functions of what is used in the paper of Comparing Datatype Generic Libraries in Haskell
-in Shapeless. However, this resulted into a more difficult problem to solve than expected. The reason for this is that the authors of the Shapeless library did not focus on all the criteria of the paper. This made some functions of the paper hard to implement. When we are done writing these function we will compare it to the other generic libraries in Haskell.
+We started working on implementing the generic functions of what is used in the
+paper of Comparing Datatype Generic Libraries in Haskell in Shapeless. However,
+this resulted into a more difficult problem to solve than expected. The reason
+for this is that the authors of the Shapeless library did not focus on all the
+criteria of the paper. This made some functions of the paper hard to implement.
+When we are done writing these function we will compare it to the other generic
+libraries in Haskell.
 
+Next, we are working in parallel to implement the EMGM(Haskell generic library)
+to Scala. We are not planning to implement all of the default function of EMGM,
+due lack of time and some functions are not really interesting for Scala. Also,
+it was harder than expected to implement some functions, because Scala does some
+things quite different than Haskell. At the moment of writing this summary we
+have implemented the Map, Crush, Collect and Everywhere functions. Now we are
+focusing on implementing the functions used in the paper in the ported library. 
 
-Next, we are working in parallel to implement the emgm(Haskell generic library) to Scala. We are not planning to implement all of the default function of emgm, due lack of time and some functions are not really interesting for Scala. Also, it was harder than expected to implement some functions, because Scala does some things quite different than Haskell. At the moment of writing this summary we have implemented the Map, Collect, Everywhere and Crush functions. Now we are going to focus on implementing the functions used in the paper in the ported library. 
+In the repository everything is in a highly experimental state (and mostly
+incomplete), but the implementation and related Scala files can be found under
+the folder 'Development'.
 
-
-We maybe took a little bit of a detour from our planning, but we think everything is going fine.
+We maybe took a little bit of a detour from our planning, but we think for now
+everything is going fine.

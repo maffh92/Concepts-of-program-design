@@ -9,7 +9,7 @@ trait Show[A] {
 
 /* Companion object of Show */
 object Show {
-  //def apply[A](implicit e : Show[A]) : Show[A] = e
+  def apply[A](implicit e : Show[A]) : Show[A] = e
 
   def instance[A](func : A => String) : Show[A] =
     new Show[A] {
@@ -33,6 +33,10 @@ object Show {
       case Nil => "[]"
       case (x :: xs) => sh.show(x) ++ "::" ++ show(xs)
     }
+  }
+
+  implicit def ShowAny[A](x : A) : String = {
+    x.toString()
   }
 
   /* Instances for HList */

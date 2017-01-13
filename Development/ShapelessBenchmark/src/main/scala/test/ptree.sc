@@ -15,7 +15,7 @@ object PTreeTest {
 
   // val s1 : Show[Perfect[Int]] = Show[Perfect[Int]]
 
-  // It happens the same for the Eq typeclass, but this time the Scala
+  // It happens the same for the Eq typeclass, but sometimes in the Scala
   // compiler diverges.
 
   // val e1 : Eq[Perfect[Int]] = Eq[Perfect[Int]
