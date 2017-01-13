@@ -151,15 +151,14 @@ object CrushObject {
     crush(AssocLeft)(f)(z)(x)
   }
 
-  // def plusFunction[A](x : String)(y : String) = x + y
 
   def sum[X,B,F[_]](x : F[B])(implicit number : Number[B], rep : FRep[({type AB[X] = Crush[B,X]})#AB,F]) : scala.Unit = {
     val som = crushr(number.plus)(number.empty)(x)
   }
 
 
-  // def hoi[F[_],B] (implicit rep : FRep[({type AB[X] = Crush[B,X]})#AB,F])  = rep
-  // val hoi1 = hoi
+  // def testGenericCrushList[F[_],B] (implicit rep : FRep[({type AB[X] = Crush[B,X]})#AB,F])  = rep
+  // val testGeneric = testGenericCrushList
 
   trait Number[A] {
     // an identity element

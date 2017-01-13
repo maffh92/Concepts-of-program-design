@@ -1,6 +1,7 @@
 [debug] Other repositories:
 [debug] Default repositories:
 [debug] Using inline dependencies specified in Scala.
+[debug] no default cache defined: set to /home/maffh/.ivy2/cache
 [debug] :: resolving dependencies :: default#generic$sbt_2.12;1.0
 [debug] 	confs: [default]
 [debug] 	validate = true
@@ -703,9 +704,9 @@
 [debug] 	[NOT REQUIRED] org.scala-sbt#test-agent;0.13.8!test-agent.jar
 [debug] 	[NOT REQUIRED] org.scala-sbt#test-interface;1.0!test-interface.jar
 [debug] 	[NOT REQUIRED] org.scala-sbt#apply-macro;0.13.8!apply-macro.jar
-[debug] :: resolution report :: resolve 775ms :: artifacts dl 26ms
-[debug] 	report for default#generic$sbt_2.12;1.0 default produced in /mnt/win/Documenten/CS/CPD/Concepts-of-program-design/Development/Generic/target/resolution-cache/reports/default-generic$sbt_2.12-default.xml
-[debug] 	resolve done (775ms resolve - 26ms download)
+[debug] :: resolution report :: resolve 720ms :: artifacts dl 39ms
+[debug] 	report for default#generic$sbt_2.12;1.0 default produced in /home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/target/resolution-cache/reports/default-generic$sbt_2.12-default.xml
+[debug] 	resolve done (720ms resolve - 39ms download)
 [debug] Using inline dependencies specified in Scala.
 [debug] :: resolving dependencies :: default#generic$sources_2.12;1.0
 [debug] 	confs: [default]
@@ -1069,6 +1070,6 @@
 [debug] 	[NOT REQUIRED] org.scala-sbt#precompiled-2_8_2;0.13.8!precompiled-2_8_2.jar(src)
 [debug] 	[NOT REQUIRED] org.scala-sbt#precompiled-2_9_2;0.13.8!precompiled-2_9_2.jar(src)
 [debug] 	[NOT REQUIRED] org.scala-sbt#precompiled-2_9_3;0.13.8!precompiled-2_9_3.jar(src)
-[debug] :: resolution report :: resolve 168ms :: artifacts dl 23ms
-[debug] 	report for default#generic$sources_2.12;1.0 default produced in /mnt/win/Documenten/CS/CPD/Concepts-of-program-design/Development/Generic/target/resolution-cache/reports/default-generic$sources_2.12-default.xml
-[debug] 	resolve done (168ms resolve - 23ms download)
+[debug] :: resolution report :: resolve 234ms :: artifacts dl 61ms
+[debug] 	report for default#generic$sources_2.12;1.0 default produced in /home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/target/resolution-cache/reports/default-generic$sources_2.12-default.xml
+[debug] 	resolve done (234ms resolve - 61ms download)
