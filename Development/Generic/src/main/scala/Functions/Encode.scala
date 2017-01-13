@@ -1,4 +1,6 @@
-import GenericObject._
+package Functions
+
+import Base.GenericObject._
 
 object EncodeObject {
 

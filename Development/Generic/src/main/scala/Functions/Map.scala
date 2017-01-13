@@ -1,4 +1,6 @@
-import GenericObject._
+package Functions
+
+import Base.GenericObject._
 
 object MapObject {
 
@@ -6,7 +8,7 @@ object MapObject {
     def selMap : A => B
   }
 
-  trait myGeneric2 extends Generic2[Map]{
+  implicit object MapC extends Generic2[Map]{
 
     def idMap[A] : Map[A,A] = new Map[A,A]{def selMap = id}
 
@@ -26,10 +28,10 @@ object MapObject {
       }
     }
 
-    def view[A1,A2,B1,B2](iso1 : Iso[A2,A1],iso2 : Iso[B2,B1], a: Map[A1,B1]) : Map[A2,B2] =
+    def view[A1,A2,B1,B2](iso1 : Iso[A2,A1],iso2 : Iso[B2,B1],a: () => Map[A1,B1]) : Map[A2,B2] =
     {
       new Map[A2,B2]{
-        def selMap = rTypeMap(iso1)(iso2)(a)
+        def selMap = rTypeMap(iso1)(iso2)(a())
       }
     }
 

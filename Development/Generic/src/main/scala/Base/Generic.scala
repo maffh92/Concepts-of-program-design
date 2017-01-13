@@ -1,5 +1,6 @@
-import scala.language.higherKinds
-import scala.language.postfixOps
+package Base
+
+import scala.language.{higherKinds, postfixOps}
 
 object GenericObject {
 

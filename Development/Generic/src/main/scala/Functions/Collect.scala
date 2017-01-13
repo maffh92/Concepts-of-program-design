@@ -1,8 +1,8 @@
-import scala.language.higherKinds
-import scala.language.postfixOps
-import GenericObject._
+package Functions
 
-import scalaz.{Alternative, ApplicativePlus}
+import scala.language.{higherKinds, postfixOps}
+import scalaz.Alternative
+import Base.GenericObject._
 
 object CollectObject {
 

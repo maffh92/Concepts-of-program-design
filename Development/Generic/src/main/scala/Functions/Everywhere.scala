@@ -1,6 +1,8 @@
-import scala.language.higherKinds
-import scala.language.postfixOps
-import GenericObject._
+package Functions
+
+import Base.GenericObject._
+
+import scala.language.{higherKinds, postfixOps}
 
 object EverywhereObject {
 
