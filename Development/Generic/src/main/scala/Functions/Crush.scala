@@ -4,10 +4,21 @@ import Base.GenericObject._
 
 import scala.language.{higherKinds, postfixOps}
 /**
-  * Created by maffh on 8-1-17.
+  * This file is still under construction, because the representation for the Lists and the crush does not compile.
   */
 object CrushObject {
 
+  class Assoc
+  case object AssocLeft extends Assoc
+  case object AssocRight extends Assoc
+
+  trait Crush[B,A]{
+    def selCrush : Assoc => A => B => B
+  }
+
+  /*
+   Help functions
+   */
   def frepList[A,G[_]](g : G[A])(implicit gg : Generic[G]): G[List[A]] = {
     gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepList[A,G](g))))
   }
@@ -19,13 +30,7 @@ object CrushObject {
 
 
 
-  class Assoc
-  case object AssocLeft extends Assoc
-  case object AssocRight extends Assoc
 
-  trait Crush[B,A]{
-    def selCrush : Assoc => A => B => B
-  }
 
   def rsumCrush[A,B,D](ra : Crush[D,A])(rb : Crush[D,B])(asc : Assoc)(plus : Plus[A,B])(d : D) : D = {
     plus match{
@@ -105,7 +110,7 @@ object CrushObject {
 
 
   /*
-  Representations
+  Representations, these functions are actually ambiguous, but these are here more for testing purposes
 
   */
 
@@ -135,7 +140,7 @@ object CrushObject {
 //    }
 //  }
 
-
+// The actually crush functions:
   def crush[B,A,F[_]](asc : Assoc)(f : A => B => B)(z : B)(x : F[A])(implicit rep : FRep[({type AB[A] = Crush[B,A]})#AB,F]): B = {
     val fCrush = new Crush[B,A]{
       override def selCrush= _ => f
