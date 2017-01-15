@@ -51,20 +51,6 @@ def frep2List[A,B,G[_,_]](g : G[A,B])(implicit gg : Generic2[G]): G[List[A],List
 }
 
 
-
-// frep2List :: (Generic g) => g a -> g [a]
-// frep2List ra =
-//   rtype2
-//     epList
-    // (rcon conNil runit `rsum` rcon conCons (ra `rprod` frepList ra))
-
-// -- | Representation of lists for 'frep2'.
-// frep2List :: (Generic2 g) => g a b -> g [a] [b]
-// frep2List ra =
-//   rtype2
-//     epList epList
-//     (rcon2 conNil runit2 `rsum2` rcon2 conCons (ra `rprod2` frep2List ra))
-
 // Not sure if correct
 abstract class GenericList[G[_]](implicit gg: Generic[G]) {
 	def list[A]: G[A] => G[List[A]] = {
@@ -259,12 +245,12 @@ def rtypeCrush[A,B,D](iso1 : Iso[B,A])(ra : Crush[D,A])(asc : Assoc)(b : B)(d : 
 	ra.selCrush(asc)(iso1.from(b))(d)
 }
 
-object  crushC {
-    implicit def mkCrush[B] : crushC[B] = new crushC[B]
+
+object crushC{
+	implicit def mkCrush[Z] = new crushC[Z] 
 }
 
-class crushC[B]extends Generic[({type AB[A] = Crush[B,A]})#AB]{
-
+class crushC[B] extends Generic[({type AB[A] = Crush[B,A]})#AB]{
 
 	def idCrush[A] = 
 	{
@@ -318,6 +304,10 @@ Representations
 */
 
 
+ def frepList2[A,G[_]](g : Crush[Int, A])(implicit gg : Generic[({type AB[A] = Crush[Int,A]})#AB]): Crush[Int, List[A]] = {
+    gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepList2[A,G](g))))
+  }
+
 implicit def Rep2List[G[_,_]](implicit g : Generic2[G]) : FRep2[G,List] = new FRep2[G,List] {
 	def frep2[A,B](g1 : G[A,B]) : G[List[A], List[B]] = {
 		frep2List(g1)
@@ -335,13 +325,13 @@ implicit def RepList[G[_]](implicit g : Generic[G]) : FRep[G,List] = {
 } 
 
 
-implicit def RepList2[G[_],B](implicit g : Generic[({type AB[A] = Crush[B,A]})#AB]) : FRep[({type AB[X] = Crush[Int,X]})#AB,List] = {
-	new FRep[({type AB[X] = Crush[Int,X]})#AB,List] {
-		def frep[A](g1 : Generic[({type AB[Z] = Crush[B,Z]})#AB]) : G[List[A]] = {
-			frepList(g1[Int])
-		}
-	}
-} 
+implicit def RepList2[G[_]](implicit g : Generic[({type AB[A] = Crush[Int,A]})#AB]) : FRep[({type AB[A] = Crush[Int,A]})#AB,List] = {
+  new FRep[({type AB[X] = Crush[Int,X]})#AB,List]{
+    override def frep[A](g1: Crush[Int, A]): Crush[Int, List[A]] = frepList2(g1)
+  }
+}
+
+
 
 
 def crush[B,A,F[_]](asc : Assoc)(f : A => B => B)(z : B)(x : F[A])(implicit rep : FRep[({type AB[A] = Crush[B,A]})#AB,F]): B = {
@@ -361,8 +351,8 @@ def crushl[B,A,F[_]](f : A => B => B)(z : B)(x : F[A])(implicit rep : FRep[({typ
 
 // def plusFunction[A](x : String)(y : String) = x + y
 
-def sum[X,B,F[_]](x : F[B])(implicit number : Number[B], rep : FRep[({type AB[X] = Crush[B,X]})#AB,F]) : scala.Unit = {
-	val som = crushr(number.plus)(number.empty)(x)
+def sum[X,B,F[_]](x : F[B])(implicit number : Number[B], rep : FRep[({type AB[X] = Crush[B,X]})#AB,F]) : B = {
+	crushr(number.plus)(number.empty)(x)
 }
 
 
@@ -386,3 +376,11 @@ implicit val IntMonoid = new Number[Int] {
 
 val lijst = List(1,2,3)
 
+
+def callMattthew(implicit m : Matthew) : String = m.shout
+object Matthew{
+	implicit def matthew : Matthew = new Matthew
+}
+class Matthew{
+	def shout : String  = "Matthew"
+}
