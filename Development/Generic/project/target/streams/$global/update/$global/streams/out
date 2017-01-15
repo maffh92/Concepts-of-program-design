@@ -1,4 +1,4 @@
-[info] Updating {file:/home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/project/}generic-build...
+[info] Updating {file:/home/maffh/Development/Concepts-of-program-design/Development/Generic/project/}generic-build...
 [debug] :: resolving dependencies :: default#generic-build;0.1-SNAPSHOT
 [debug] 	confs: [compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, sources, docs, pom, scala-tool]
 [debug] 	validate = true
@@ -16,7 +16,7 @@
 [debug] == resolving dependencies for default#generic-build;0.1-SNAPSHOT [provided]
 [debug] == resolving dependencies default#generic-build;0.1-SNAPSHOT->org.scala-lang#scala-library;2.10.4 [provided->default(compile)]
 [info] Resolving org.scala-lang#scala-library;2.10.4 ...
-[debug] sbt-chain: Checking cache for: sbt.ivyint.MergedDescriptors@11aff126
+[debug] sbt-chain: Checking cache for: sbt.ivyint.MergedDescriptors@6c5f6d95
 [debug] sbt-chain: module revision found in cache: org.scala-lang#scala-library;2.10.4
 [debug] 	found org.scala-lang#scala-library;2.10.4 in sbt-chain
 [debug] 	[2.10.4] org.scala-lang#scala-library;2.10.4
@@ -1766,19 +1766,19 @@
 [debug] 	[NOT REQUIRED] org.scala-sbt#apply-macro;0.13.8!apply-macro.jar
 [debug] 	[NOT REQUIRED] org.scala-lang#jline;2.10.4!jline.jar
 [debug] 	[NOT REQUIRED] org.fusesource.jansi#jansi;1.4!jansi.jar
-[debug] :: resolution report :: resolve 4146ms :: artifacts dl 199ms
-[debug] 	report for default#generic-build;0.1-SNAPSHOT compile produced in /home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-compile.xml
-[debug] 	report for default#generic-build;0.1-SNAPSHOT runtime produced in /home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-runtime.xml
-[debug] 	report for default#generic-build;0.1-SNAPSHOT test produced in /home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-test.xml
-[debug] 	report for default#generic-build;0.1-SNAPSHOT provided produced in /home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-provided.xml
-[debug] 	report for default#generic-build;0.1-SNAPSHOT optional produced in /home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-optional.xml
-[debug] 	report for default#generic-build;0.1-SNAPSHOT compile-internal produced in /home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-compile-internal.xml
-[debug] 	report for default#generic-build;0.1-SNAPSHOT runtime-internal produced in /home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-runtime-internal.xml
-[debug] 	report for default#generic-build;0.1-SNAPSHOT test-internal produced in /home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-test-internal.xml
-[debug] 	report for default#generic-build;0.1-SNAPSHOT plugin produced in /home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-plugin.xml
-[debug] 	report for default#generic-build;0.1-SNAPSHOT sources produced in /home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-sources.xml
-[debug] 	report for default#generic-build;0.1-SNAPSHOT docs produced in /home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-docs.xml
-[debug] 	report for default#generic-build;0.1-SNAPSHOT pom produced in /home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-pom.xml
-[debug] 	report for default#generic-build;0.1-SNAPSHOT scala-tool produced in /home/maffh/Development/Backup/tmpp/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-scala-tool.xml
-[debug] 	resolve done (4146ms resolve - 199ms download)
+[debug] :: resolution report :: resolve 3304ms :: artifacts dl 121ms
+[debug] 	report for default#generic-build;0.1-SNAPSHOT compile produced in /home/maffh/Development/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-compile.xml
+[debug] 	report for default#generic-build;0.1-SNAPSHOT runtime produced in /home/maffh/Development/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-runtime.xml
+[debug] 	report for default#generic-build;0.1-SNAPSHOT test produced in /home/maffh/Development/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-test.xml
+[debug] 	report for default#generic-build;0.1-SNAPSHOT provided produced in /home/maffh/Development/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-provided.xml
+[debug] 	report for default#generic-build;0.1-SNAPSHOT optional produced in /home/maffh/Development/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-optional.xml
+[debug] 	report for default#generic-build;0.1-SNAPSHOT compile-internal produced in /home/maffh/Development/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-compile-internal.xml
+[debug] 	report for default#generic-build;0.1-SNAPSHOT runtime-internal produced in /home/maffh/Development/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-runtime-internal.xml
+[debug] 	report for default#generic-build;0.1-SNAPSHOT test-internal produced in /home/maffh/Development/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-test-internal.xml
+[debug] 	report for default#generic-build;0.1-SNAPSHOT plugin produced in /home/maffh/Development/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-plugin.xml
+[debug] 	report for default#generic-build;0.1-SNAPSHOT sources produced in /home/maffh/Development/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-sources.xml
+[debug] 	report for default#generic-build;0.1-SNAPSHOT docs produced in /home/maffh/Development/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-docs.xml
+[debug] 	report for default#generic-build;0.1-SNAPSHOT pom produced in /home/maffh/Development/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-pom.xml
+[debug] 	report for default#generic-build;0.1-SNAPSHOT scala-tool produced in /home/maffh/Development/Concepts-of-program-design/Development/Generic/project/target/resolution-cache/reports/default-generic-build-scala-tool.xml
+[debug] 	resolve done (3304ms resolve - 121ms download)
 [info] Done updating.
