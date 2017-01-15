@@ -3,9 +3,9 @@ import scala.language.higherKinds
 import scala.language.postfixOps
 import Base.GenericObject._
 import Functions.MapObject._
-/**
-  * Created by maffh on 8-1-17.
-  */
+import  Functions.CrushObject._
+
+
 object GList {
   type ListS[A] = Plus[Unit,Product[A,List[A]]]
 
@@ -73,18 +73,48 @@ object GList {
     }
   }
 
-  trait FRep[G[_],F[_]]{
-    def frep[A](g1 : G[A]) : G[F[A]]
+
+
+  implicit def RepList[G[_]](implicit g : Generic[G]) : FRep[G,List] = {
+    new FRep[G,List] {
+      def frep[A](g1 : G[A]) : G[List[A]] = {
+        frepList(g1)
+      }
+    }
   }
 
-  trait FRep2[G[_,_],F[_]]{
-    def frep2[A,B](g1 : G[A,B]) : G[F[A],F[B]]
+  implicit def RepList2[B](implicit g : Generic[({type AB[A] = Functions.CrushObject.Crush[B,A]})#AB]) : Base.GenericObject.FRep[({type AB[A] = Functions.CrushObject.Crush[B,A]})#AB,List] = {
+    new FRep[({type AB[X] = Crush[B,X]})#AB,List]{
+      override def frep[A](g1: Crush[B, A]): Crush[B, List[A]] = frepList2(g1)
+    }
   }
 
-  implicit object Rep2List extends Base.GenericObject.FRep2[Functions.MapObject.Map,List]{
+
+
+  def frepList2[A,B](g : Crush[B, A])(implicit gg : Generic[({type AB[A] = Crush[B,A]})#AB]): Crush[B, List[A]] = {
+    gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepList2[A,B](g))))
+  }
+
+  implicit val Rep2List = new Base.GenericObject.FRep2[Functions.MapObject.Map,List]{
     def frep2[A,B](g1: Map[A,B]) : Map[List[A],List[B]] = {
       frep2List(g1)
     }
   }
 
+  //  Need to write out the full type for implicits in a different file. Need to find out why
+  //  implicit def Rep2List[G[_,_]](implicit g : Generic2[G]) : FRep2[G,List] = new FRep2[G,List] {
+  //    def frep2[A,B](g1 : G[A,B]) : G[List[A], List[B]] = {
+  //      frep2List(g1)
+  //    }
+  //  }
+//  implicit def RepList2[G[_,_],B](implicit g : Generic[({type AB[A] = G[B,A]})#AB]) : FRep[({type AB[A] = G[B,A]})#AB,List] = {
+//    new FRep[({type AB[X] = G[B,X]})#AB,List]{
+//      override def frep[A](g1: G[B, A]): G[B, List[A]] = frepList2(g1)
+//    }
+//  }
+//  implicit def RepList2[G[_,_],B](implicit g : Generic[({type AB[A] = G[B,A]})#AB]) : FRep[({type AB[A] = G[B,A]})#AB,List] = {
+//    new FRep[({type AB[X] = G[B,X]})#AB,List]{
+//      override def frep[A](g1: G[B, A]): G[B, List[A]] = frepList2(g1)
+//    }
+//  }
 }

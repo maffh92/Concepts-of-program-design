@@ -12,25 +12,9 @@ object CrushObject {
   case object AssocLeft extends Assoc
   case object AssocRight extends Assoc
 
-  trait Crush[B,A]{
-    def selCrush : Assoc => A => B => B
+  trait Crush[B,A] {
+    def selCrush: Assoc => A => B => B
   }
-
-  /*
-   Help functions
-   */
-  def frepList[A,G[_]](g : G[A])(implicit gg : Generic[G]): G[List[A]] = {
-    gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepList[A,G](g))))
-  }
-
-
-  def frep2List[A,B,G[_,_]](g : G[A,B])(implicit gg : Generic2[G]): G[List[A],List[B]] = {
-    gg.view(listIso[A],listIso[B],() => gg.plus(gg.unit,gg.product(g,frep2List[A,B,G](g))))
-  }
-
-
-
-
 
   def rsumCrush[A,B,D](ra : Crush[D,A])(rb : Crush[D,B])(asc : Assoc)(plus : Plus[A,B])(d : D) : D = {
     plus match{
@@ -56,9 +40,7 @@ object CrushObject {
     ra.selCrush(asc)(iso1.from(b))(d)
   }
 
-  object  crushC {
-    implicit def mkCrush[B] : crushC[B] = new crushC[B]
-  }
+  implicit def mkCrush[B] : crushC[B] = new crushC[B]
 
   class crushC[B]extends Generic[({type AB[A] = Crush[B,A]})#AB]{
 
@@ -69,8 +51,6 @@ object CrushObject {
         override def selCrush = _ => _ => id
       }
     }
-
-
 
     def unit = idCrush
     def char = idCrush
@@ -109,37 +89,6 @@ object CrushObject {
   }
 
 
-  /*
-  Representations, these functions are actually ambiguous, but these are here more for testing purposes
-
-  */
-
-
-  implicit def Rep2List[G[_,_]](implicit g : Generic2[G]) : FRep2[G,List] = new FRep2[G,List] {
-    def frep2[A,B](g1 : G[A,B]) : G[List[A], List[B]] = {
-      frep2List(g1)
-    }
-  }
-
-
-
-  implicit def RepList[G[_]](implicit g : Generic[G]) : FRep[G,List] = {
-    new FRep[G,List] {
-      def frep[A](g1 : G[A]) : G[List[A]] = {
-        frepList(g1)
-      }
-    }
-  }
-
-
-//  implicit def RepList2[G[_]](implicit g : Generic[({type AB[A] = Crush[Int,A]})#AB]) : FRep[({type AB[A] = Crush[Int,A]})#AB,List] = {
-//    new FRep[({type AB[X] = Crush[Int,X]})#AB,List] {
-//      def frep[Z](g1 : ({type ZA[A] = Crush[Int,A]})#ZA[Z]) :  ({type ZB[A] = Crush[List[Int],A]})#ZB[Z]  = {
-////        frepList(g1)
-//      }
-//    }
-//  }
-
 // The actually crush functions:
   def crush[B,A,F[_]](asc : Assoc)(f : A => B => B)(z : B)(x : F[A])(implicit rep : FRep[({type AB[A] = Crush[B,A]})#AB,F]): B = {
     val fCrush = new Crush[B,A]{
@@ -157,24 +106,26 @@ object CrushObject {
   }
 
 
-  def sum[X,B,F[_]](x : F[B])(implicit number : Number[B], rep : FRep[({type AB[X] = Crush[B,X]})#AB,F]) : scala.Unit = {
-    val som = crushr(number.plus)(number.empty)(x)
+  def sum[B,F[_]](x : F[B])(implicit number : Number[B], rep : FRep[({type AB[X] = Crush[B,X]})#AB,F]) : B = {
+    crushr(number.plus)(number.zero)(x)
   }
 
-
-  // def testGenericCrushList[F[_],B] (implicit rep : FRep[({type AB[X] = Crush[B,X]})#AB,F])  = rep
-  // val testGeneric = testGenericCrushList
+  def product[B,F[_]](x : F[B])(implicit number : Number[B], rep : FRep[({type AB[X] = Crush[B,X]})#AB,F]) : B = {
+    crushr(number.multiple)(number.one)(x)
+  }
 
   trait Number[A] {
     // an identity element
-    def empty: A
+    def zero : A
+    def one : A
     // an associative operation
     def plus(x: A)(y: A): A
     def multiple(x: A)(y: A): A
   }
 
   implicit val IntMonoid = new Number[Int] {
-    def empty = 0
+    def zero = 0
+    def one = 1
     def plus(x: Int)(y: Int) = x + y
     def multiple(x: Int)(y: Int) = x * y
   }
