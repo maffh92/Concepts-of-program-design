@@ -384,3 +384,71 @@ object Matthew{
 class Matthew{
 	def shout : String  = "Matthew"
 }
+
+
+
+
+sealed trait BinTree[T]
+
+case class Leaf[T](leaf : T) extends BinTree[T]
+case class Bin[T](left : BinTree[T], right : BinTree[T]) extends BinTree[T]
+
+
+type BinTreeRep[T] = Plus[T,Product[BinTree[T],BinTree[T]]]
+  def fromBinTree[T](tree : BinTree[T]) : BinTreeRep[T] = {
+    tree match{
+      case Leaf(x) => Inl(x)
+      case Bin(l,r) => Inr(Product(l,r))
+    }
+  }
+
+  def toBinTree[T](plus : BinTreeRep[T]) : BinTree[T] = {
+    plus match{
+      case Inl(x) => Leaf(x)
+      case Inr(Product(l,r)) => Bin(l,r)
+    }
+  }
+
+  def binTreeIso[T] = new Iso[BinTree[T],BinTreeRep[T]]{
+    override def from = fromBinTree
+    override def to = toBinTree
+  }
+
+
+  def binTree1[A,G[_]](g : G[A])(implicit gg : Generic[G]): G[BinTree[A]] = {
+    gg.view(binTreeIso[A],() => gg.plus(g,gg.product(binTree1[A,G](g),binTree1[A,G](g))))
+  }
+
+  def binTree2[A,B,G[_,_]](g : G[A,B])(implicit gg : Generic2[G]): G[BinTree[A],BinTree[B]] = {
+    gg.view(binTreeIso[A],binTreeIso[B],() => gg.plus(g,gg.product(binTree2[A,B,G](g),binTree2[A,B,G](g))))
+  }
+
+  implicit def frepTree1[G[_]](implicit g : Generic[G]) : FRep[G,BinTree] = {
+    new FRep[G,BinTree] {
+      override def frep[A](g1 : G[A]) : G[BinTree[A]] = {
+        binTree1(g1)
+      }
+    }
+  }
+
+  implicit def frepTree2(implicit g : Generic2[Map]) : FRep2[Map,BinTree] = {
+    new FRep2[Map,BinTree] {
+      override def frep2[A, B](g1: Map[A, B]): Map[BinTree[A], BinTree[B]] = binTree2(g1)
+    }
+  }
+
+  trait GRep[G[_], A] {
+    def grep: G[A]
+  }
+
+  def gTree[A, G[_]](implicit gg: Generic[G], a: GRep[G, A]) = new GRep[G, BinTree[A]] {
+    override def grep: G[BinTree[A]] = binTree1(a.grep)
+  }
+
+
+
+//Function to test:
+def increase(x : Int) = x + 1
+val listInt : List[Int] = List(1,3,6,9)
+val tree : BinTree[Int] = Bin(Leaf(2),Leaf(10))
+

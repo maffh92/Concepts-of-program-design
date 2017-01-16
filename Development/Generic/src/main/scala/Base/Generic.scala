@@ -48,11 +48,8 @@ object GenericObject {
     gg.view(listIso[A], () => gg.plus(gg.unit, gg.product(g, rList[A, G](g))))
   }
 
-  // Not sure if correct
-  abstract class GenericList[G[_]](implicit gg: Generic[G]) {
-    def list[A]: G[A] => G[List[A]] = {
-      x => rList(x)
-    }
+  class GenericList[G[_]](implicit gg: Generic[G]) {
+    def list[A](x : G[A]) : G[List[A]] = rList(x)
   }
 
   type Arity = Int
