@@ -357,8 +357,110 @@ res2: Int = 120
 * With a combination of __case classes__ and __traits__ we can
 easily implement (Generalized) ADT.
 
-* simpe Expr language in Scala using case classes
-* pattern matching (show using eval function)
+## (Well typed) Expression language
+
+```scala
+sealed trait Expr[A]
+
+case class Val[A](x : A) extends Expr[A]
+case class Add(x : Expr[Int], y : Expr[Int]
+              extends Expr[Int]
+case class If[A](c : Expr[Boolean])
+                (x : Expr[A], y : Expr[A])
+                extends Expr[A]
+```
+
+---
+
+# Traits as GADTs (II)
+
+```scala
+def eval[A](e : Expr[A]) : A = e match {
+  case Val(x) => x;
+  case Add(x,y) => eval(x) + eval(y)
+  case If(c)(x,y) =>
+    if (eval(c)) eval(x) else eval(y);
+}
+```
+
+```scala
+scala> val ex1 =
+  | If(Val(true),Add(Val(1),Val(1)),Val(0))
+ex1: If[Int] =
+  | If(Val(true),Add(Val(1),Val(1)),Val(0))
+
+scala> eval(ex1)
+res1: Int = 2
+```
+
+---
+
+# Abstract type members
+
+```scala
+trait AbsCell {
+  type T
+  val init : T
+  var value : T = init
+  def get() : T = value
+  def set(x : T) : Unit = value = x
+}
+scala> val mc = new AbsCell { type T = Int;
+                              val init = 0 }
+mc: AbsCell{type T = Int} = $anon$1@7989d46
+
+scala> mc.set(99)
+
+scala> mc.get()
+res26: mc.T = 99
+```
+
+---
+
+# Path-dependent types
+```scala
+def resetCell(cell : AbsCell) = {
+  cell.set(cell.init)
+}
+```
+
+* Is this well typed?
+* The expression `cell.init` has type `cell.T`
+* The method cell.set has type `cell.T => Unit`
+
+* `cell.T` is an example of a path-dependent type
+
+---
+
+# Intermezzo: Implicit classes
+* Scala also supports the definition of a class to be implicit.
+* This makes the methods defined in the class to be avaliable without ever
+  instantiating the class explicitly.
+* Of course, there are severe restrictions on how this classes are defined.
+```scala
+implicit class Incr(x : Int) {
+  def incr = x + 1
+}
+implicit class Decr(x : Int) {
+  def decr = x - 1
+}
+scala> 1.incr.incr.incr.decr
+res1: Int = 3
+```
+
+---
+
+# Intermezzo: Implicit classes (II)
+* We can even add type parameters to the class so it works out of the box for
+  any type.
+```scala
+implicit class Print[A](x : A) {
+  def print = println(x)
+}
+
+scala> ((x : Int) => 1).print
+$line123.$read$$iw$$iw$$iw$$$Lambda$2891/...
+```
 
 ---
 
