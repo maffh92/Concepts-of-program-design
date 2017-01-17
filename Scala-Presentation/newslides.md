@@ -132,6 +132,63 @@ Examples.
 |              |       |                |        |            |
 |              |       |                |        |            |
 
+---
+
+# Case Classes and Objects
+
+Case classes
+* Immutable by default
+* Decomposable through pattern matching
+* Compared by structural equality instead of by reference
+* Succinct to instantiate and operate on
+
+Case Object
+* Does not take any arguments
+* Singleton object 
+* Similar to the Case class(Except for the above bullets)  
+
+```scala
+case class Person(name : String) {
+  def noise = "I am a person"
+}
+
+case object Frog{
+  def noise : String = "CROAK"
+}
+```
+---
+
+# Case Classes and Objects - Example
+
+
+
+```scala
+case class Person(name : String) {
+  def noise = "I am a person"
+}
+
+case object Frog{
+  def noise : String = "CROAK"
+}
+```
+---
+
+# Pattern Match
+
+```scala
+def whatDoAnySay(animal : Any) : Unit = {
+    animal match {
+      case Frog => println(Frog.noise)
+      case Person(name) => println(name)
+      case 1 => println("I am an Int")
+      case 'a' => println("I am a Character")
+      case "aaaa" => println("I am a String")
+      case x => println("I am not defined in the pattern match")
+    }
+}
+```
+
+---
 
 
 ---
@@ -999,6 +1056,10 @@ res1: Int = 20
 ---
 
 # Conclusion
+
+* It combines object oriented with functional.
+* Scala uses the Java Virtual Machine to execute the code
+* Java and Scala interoperability
 
 
 
