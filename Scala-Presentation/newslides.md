@@ -395,8 +395,24 @@ res1: Int = 2
 
 ---
 
-# Abstract type members
+# Traits and Higher-Kinded types
 
+* Higher kinded types are types that take types as arguments
+* For example in Haskell the type `Maybe :: * -> *`
+* Scala supports Higher-kinded types
+
+```scala
+trait Functor[F[_]] {
+  def fmap[A,B](f : A => B)(F[A]) : F[B]
+}
+```
+
+* However, the support for type inference is somewhat limited and
+many times it cannot correctly typecheck the program.
+
+---
+
+# Abstract type members
 ```scala
 trait AbsCell {
   type T
@@ -433,7 +449,7 @@ def resetCell(cell : AbsCell) = {
 ---
 
 # Intermezzo: Implicit classes
-* Scala also supports the definition of a class to be implicit.
+* Scala also supports the definition of a class to be __implicit__.
 * This makes the methods defined in the class to be avaliable without ever
   instantiating the class explicitly.
 * Of course, there are severe restrictions on how this classes are defined.
@@ -453,6 +469,7 @@ res1: Int = 3
 # Intermezzo: Implicit classes (II)
 * We can even add type parameters to the class so it works out of the box for
   any type.
+
 ```scala
 implicit class Print[A](x : A) {
   def print = println(x)
@@ -460,42 +477,134 @@ implicit class Print[A](x : A) {
 
 scala> ((x : Int) => 1).print
 $line123.$read$$iw$$iw$$iw$$$Lambda$2891/...
+
+scala> true.print
+true
 ```
 
 ---
 
-# Functions
-Several approaches:
-* Methods of objects
-* First class functions, allowing higher order functions
+# Functional programming in Scala
+
+* As we've seen before, Scala is defined as being a functional programming
+  language.
+* However, the core of the language are not functions but __Traits__
+
+* While the approach of OCaml to OO+FP is to introduce an Object system on top
+  of the core **$\lambda$-calculus**
+
+* In Scala the approach is the oposite. Everything is an **Object**.
 
 ---
 
-# Anonymous function
+# Functions as Objects
+
+* In fact function values are treated as objects in Scala
+
+* The function type A => B is just an abbreviation for the class
+  scala.Function1[A,B], which is roughly defined as follows.
 
 ```scala
-scala> values.map(x => x + 1)
-res3: List[Int] = List(2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
-```
----
-
-# Functions as objects
-
-In fact function values are treated as objects in Scala
-
-The function type A => B is just an abbreviation for the class
-scala.Function1[A,B], which is roughly defined as follows.
-
-```scala
-package scala
-trait Function1[A,B]{
+trait Function1[-A,+B]{
   def apply(x : A) : B
 }
 ```
-So functions are object with apply methods
 
-There are also traits Functions2, Function3, ... for functions which take more parameters (Currently up to 22)
+So functions are object that implement such __Trait__ with apply
 
+There are also traits Function2, Function3, ... for
+functions which take more parameters (Currently up to 22)
+
+---
+
+# Anonymous functions
+
+* We have used in the example of __AbsCell__ how we can instantiate a __Trait__ with
+  an anonymous class that implements the abstract methods.
+```scala
+scala> ((x : Int) => x + 1)(1)
+res1: Int = 2
+```
+
+* Which is a shorthand for:
+```scala
+scala> (new Function1[Int,Int] {
+  def apply(x : Int) : Int = x + 1
+  })(1)
+res1: Int = 2
+```
+
+---
+
+# Functions as Objects (II)
+* So are function values?
+* Every object is a value in Scala, and functions are objects so ...
+* But how about methods, are they values?
+* Not really.
+```scala
+def id[A](x : A):A = x
+```
+* But we can turn any method into a function value using **\_** (underscore) in
+  the argument positions.
+```scala
+scala> id _
+```
+
+---
+
+# Functions as Objects (III)
+```scala
+scala> (id _)(1)
+<console>:19: error: type mismatch;
+ found   : Int(1)
+ required: Nothing
+         (id _)(1)
+                ^
+```
+
+* What just happened?
+```scala
+scala> id _
+res1: Nothing => Nothing = $$Lambda$2921/351794524@1ca14468
+```
+
+* Suspicious ...
+
+---
+
+# Functions as Objects (IV)
+
+* We need to actually provide the type of the parameter explicitly, because
+  during the conversion to a function **trait** Scala can't figure out the type
+  of it.
+
+* Now better.
+
+```scala
+scala> (id[String] _)("Hello")
+res1: String = "Hello"
+```
+
+---
+
+# Intermezzo: Apply method and Companion object
+
+* Any class or trait can implement a method apply.
+* And use it as if it was a function call (is just syntax sugar).
+
+```scala
+trait Dummy {
+  val value : Int
+}
+object Dummy {
+  class DummyImpl(x:Int) extends Dummy
+    { val value = x }
+  def apply(x : Int) = new DummyImpl(x)
+}
+
+scala> val d = Dummy(1)
+d: Dummy.DummyImpl = Dummy$DummyImpl@71bce710
+```
 
 ---
 
@@ -519,6 +628,7 @@ new Function1[Int,Int]{
   def apply(x : Int) = x * x
 }
 ```
+
 ---
 
 # Expansion of Function Calls
