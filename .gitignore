@@ -9,3 +9,4 @@ Development/Generic/project/target/*
 Development/Generic/.idea/modules/shapelessbenchmark.iml
 Development/Generic/.idea/workspace.xml
 concepts-slide-template/slides.pdf
+*.pdf
