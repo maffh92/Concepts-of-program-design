@@ -15,14 +15,41 @@ sansfont: Ubuntu Light
 
 ---
 
-# History
-
-* 2001
-* École Polytechnique Fédérale de Lausanne (EPFL) by Martin Odersky
+![Martin Odersky](img/Martin.JPG "Alt caption"){ width=50%; height=50% }
 
 ---
 
-# Companies (Not sure)
+# History
+
+From [A Brief, Incomplete, and Mostly Wrong History of Programming Languages by James
+Iry](http://james-iry.blogspot.nl/2009/05/brief-incomplete-and-mostly-wrong.html)
+
+...
+
+**2003** - A drunken Martin Odersky sees a Reese's Peanut Butter Cup ad featuring
+somebody's peanut butter getting on somebody else's chocolate and has an idea.
+He creates Scala, a language that unifies constructs from both object oriented
+and functional languages. This pisses off both groups and each promptly declares
+jihad.
+
+
+---
+
+# History
+
+* Scala = Scalable language
+* Released in 2003
+* Created by Prof. Martin Odersky at EPFL
+
+---
+
+# The full picture
+
+![](img/full-picture.jpg "Alt caption"){ width=50%; height=50% }
+
+---
+
+# Is Scala popular?
 
 * Twitter
 * Linkedin
@@ -31,38 +58,33 @@ sansfont: Ubuntu Light
 * Sony
 * etc.
 
+* TIOBE index blabla
+* Redmonk index blabla
+
 ---
 
 # Projects
 
 * PlayFramework
 * Akka
+* Sinatra
+* React
 
 ---
 
-# Scala (Still need to add a picture)
-
-* Object oriented
-* Functional
-* 
-
----
-
-# REPL
+# Overview of features
 
 
 ![](img/Repl-Example.png "Alt caption"){ width=80% }
 
----
 
-# Type system
+# Object oriented but ...
 
-
-![](img/classhierarchy.png "Alt caption"){ width=80% }
-
----
-
-# Classes
+* Scala approach to OO programming is quite different from Java
+* Scala features different constructions and also lacks some others
+..- [Abstract] Classes
+..- Traits
+..- Objects
 
 ```scala
 class Dog(name : String){
@@ -100,51 +122,160 @@ Examples.
 
 # Classes
 
-|              | Class | Abstract class | Object | Trait |
-|:------------:|:-----:|:--------------:|:------:|:-----:|
-| Inherentence |       |                |        |       |
-|  Composition |       |                |        |       |
-|  Parameters  |       |                |        |       |
-|              |       |                |        |       |
-|              |       |                |        |       |
+|              | Class | Abstract class | Trait  | Case class | Object |
+|:------------:|:-----:|:--------------:|:------:|:----------:|:------:|
+| Type parameter|       |                |        |            |
+| Value parameter             |       |                |        |            |
+| Composition       |       |                |        |            |
+| Abstract members  |       |                |        |            |
+| Concrete members  |       |                |        |            |
+|              |       |                |        |            |
+|              |       |                |        |            |
 
 
 
 ---
 
 # Traits
-## Introduction
 
-Look a lot like class definitions.
-Difference with classes:
+* Traits are the fundamental unit of code reuse in Scala
 
-* No class parameters:
+* A trait encapsulates method and field definitions that can be reused by any
+  class through **mixin composition**
+
+* Unlike class inheritance, a class may __mix in__ any number of traits.
+
+* We will see how this works in practice
+
+---
+
+# Traits as stackable modifications
+
+## A simple Queue
+
 ```scala
-class Point(x : Int, y : Int)
+import scala.collection.mutable.ArrayBuffer
+
+trait Queue[A] {
+  def get() : A
+  def put(x : A) : Unit
+}
+
+class BasicIntQueue extends Queue[Int] {
+  private val buf = new ArrayBuffer[Int]
+  def get() : Int = buf.remove(0)
+  def put(x : Int) : Unit = buf += x
+  }
 ```
+
+---
+
+# Traits as stackable modifications (II)
+
+* Now suppose we want to modify the behaviour of the BasicIntQueue in different
+  ways
+ 1. *Doubling* the integers that are inserted in the Queue
+ 2. *Incrementing* the integers that are inserted in the Queue
+ 3. *Filtering* out negative integers from the Queue
+
+* How do we do that without modifying the existing code?
+
+---
+
+# Traits as stackable modifications (III)
+
 ```scala
-trait Point(x : Int, y : Int) // Doesn't compile
+trait Doubling extends Queue[Int] {
+  abstract override def put(x : Int) : Unit = {
+    super.put(2 * x)
+  }
+}
+trait Incrementing extends Queue[Int] {
+  abstract override def put(x : Int) : Unit = {
+    super.put(1 + x)
+  }
+}
+trait Filtering extends Queue[Int] {
+  abstract override def put(x : Int) : Unit = {
+    if (x > 0) super.put(x)
+  }
+}
 ```
-* ``super`` calls are dynamically bound
-
-* Classes do not inherit traits: traits are mixed in
 
 ---
 
-# Traits
-Example with queue
+# Traits as stackable modifications (IIII)
+
+```scala
+scala> val q1 =
+  | new BasicIntQueue with Incrementing
+                      with Filtering
+q1: BasicIntQueue with Incrementing with Filtering =
+$anon$1@f5a7226
+
+scala> q1.put(0)
+
+scala> q1.get()
+java.lang.IndexOutOfBoundsException: 0
+  at scala.collection.mutable.ResizableArray. ...
+  ...
+  at BasicIntQueue.get(<console>:15)
+  ... 31 elided
+```
 
 ---
 
-# Mixin traits
-Extend queue example with double/increment
-Linearization
+# Traits as stackable modifications (IIII)
+
+```scala
+scala> val q2 =
+  | new BasicIntQueue with Filtering
+                      with Incrementing
+q2: BasicIntQueue with Filtering with Incrementing =
+$anon$1@6f731759
+
+scala> q2.put(0)
+
+scala> q2.get()
+res7: Int = 1
+```
 
 ---
-# Modelling Haskell's type classes with traits
-Example: 'Ordered'
-Explain implicit
 
+# Mixin composition & Linearization
+
+* When resolving the calls to __super__, the mixins are resolved through a
+* This allows for blabla
+
+---
+
+# Type system
+
+
+![](img/classhierarchy.png "Alt caption"){ width=80% }
+
+---
+
+# Traits as ad-hoc polymorphism (with implicits)
+
+* We can use *traits* to model Haskell's *type classes*
+
+```scala
+trait Monoid[A] {
+  def mempty : A
+  def mappend(x : A, y : A) : A
+  }
+```
+
+* Instances for the type class represented as a trait is just a _value_
+  implementing such trait
+
+```scala
+object IntMonoid extends Monoid[Int] {
+  def mempty : Int = 0
+  def mappend(x : Int, y : Int) : Int = x + y
+  }
+```
 ---
 
 # GADTs in Scala
@@ -152,6 +283,7 @@ Explain implicit
 * pattern matching (show using eval function)
 
 ---
+
 # Functions
 Several approaches:
 * Methods of objects
@@ -176,7 +308,7 @@ trait Function1[A,B]{
   def apply(x : A) : B
 }
 ```
-```scala 
+```scala
 traits Function2...Function22
 ```
 ---
