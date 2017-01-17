@@ -225,7 +225,7 @@ java.lang.IndexOutOfBoundsException: 0
 
 ---
 
-# Traits as stackable modifications (IIII)
+# Traits as stackable modifications (IV)
 
 ```scala
 scala> val q2 =
@@ -259,26 +259,104 @@ res7: Int = 1
 # Traits as ad-hoc polymorphism (with implicits)
 
 * We can use *traits* to model Haskell's *type classes*
-
 ```scala
 trait Monoid[A] {
   def mempty : A
   def mappend(x : A, y : A) : A
-  }
+}
 ```
-
-* Instances for the type class represented as a trait is just a _value_
+* An instance for the type class represented by a trait is just a _value_
   implementing such trait
-
 ```scala
 object IntMonoid extends Monoid[Int] {
   def mempty : Int = 0
   def mappend(x : Int, y : Int) : Int = x + y
-  }
+}
+```
+
+---
+
+# Traits as ad-hoc polymorphism (with implicits) (II)
+
+* For example now we can define a function such as __foldMap__
+
+```scala
+def foldMap[A,M](f : A => M)
+                (xs : List[A])
+                (ma : Monoid[M]) : M = {
+  xs.foldLeft(ma.mempty)
+             ((x : M, y : A) => ma.mappend(x, f(y)))
+}
+```
+
+```scala
+scala> foldMap((x : Int) => x)
+              (List(1,2,3,4,5))
+              (IntMonoid)
+res1: Int = 15
+```
+
+---
+
+# Traits as ad-hoc polymorphism (with implicits) (III)
+
+* Its a bit cumbersome to pass all around the instance for `Monoid[Int]`...
+
+* Scala allows us to declare some parameters as __implicit__
+
+```scala
+implicit object IntMonoid extends Monoid[Int] ...
+
+def foldMap[A,M](f : A => M)
+                (xs : List[A])
+                (implicit ma : Monoid[M]) : M = ...
+```
+```scala
+scala> foldMap((x : Int) => x)(List(1,2,3,4,5))
+res1: Int = 15
+```
+
+---
+
+# Traits as ad-hoc polymorphism (with implicits) (IV)
+
+* The compiler is in charge of figuring out the correct implementation
+for an __implicit__ declared argument.
+
+* If there are several that match the required type then apply some
+  rules of preference. Or in the extreme case raises an error.
+
+* Moreless works like Haskell class resolution (+ OverloadedInstances).
+
+* But is nice that instances are first class objects because we can
+  __explicitly__ pass them as arguments.
+
+---
+
+# Traits as ad-hoc polymorphism (with implicits) (V)
+```scala
+object ProdIntMonoid extends Monoid[Int] ...
+implicit object PlusIntMonoid extends Monoid[Int] ...
+
+def foldMap[A,M](f : A => M)
+                (xs : List[A])
+                (implicit ma : Monoid[M]) : M = ...
+```
+```scala
+scala> foldMap((x : Int) => x)(List(1,2,3,4,5))
+res1: Int = 15
+
+scala> foldMap((x : Int) => x)(List(1,2,3,4,5))
+              (ProdIntMonoid)
+res2: Int = 120
 ```
 ---
 
-# GADTs in Scala
+# Traits as Generalized Algebraic Datatypes (GADTs)
+
+* With a combination of __case classes__ and __traits__ we can
+easily implement (Generalized) ADT.
+
 * simpe Expr language in Scala using case classes
 * pattern matching (show using eval function)
 
