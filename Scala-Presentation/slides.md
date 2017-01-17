@@ -104,28 +104,6 @@ object ForLoops {
 
 ---
 
-
-# Function types
-
-A => B is an abbrevication for the class scala.Function1[A,B]
-package scala
-```scala
-trait Function1[A,B]{
-	def apply(x : A) : B
-}
-```
-```scala traits Function2...Function22```
-
----
-
-# Anonymous function
-
-```scala
-scala> values.map(x => x + 1)
-res3: List[Int] = List(2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
-```
----
-
 # Anonymous function
 
 Anonymous function
@@ -348,6 +326,90 @@ case class Family[P >: Parent, C <: Child]
 ```
 ...
 
+# Functions as objects
+
+In fact function values are treated as objects in Scala
+
+The function type A => B is just an abbreviation for the class
+scala.Function1[A,B], which is roughly defined as follows.
+
+```scala
+package scala
+trait Function1[A,B]{
+  def apply(x : A) : B
+}
+```
+So functions are object with apply methods
+
+There are also traits Functions2, Function3, ... for functions which take more parameters (Currently up to 22)
+
+
+---
+
+
+# Expansion of Function values
+
+An anomymous function such as
+```scala
+(x : Int) => x * x
+```
+is expanded to
+```scala
+{class AnonFun extends Function1[Int.Int]{
+    def apply(x : Int) = x * x
+  }
+  new AnonFun}
+```
+or, shorter, using anonymous class syntax:
+```scala
+new Function1[Int,Int]{
+  def apply(x : Int) = x * x
+}
+```
+---
+
+# Expansion of Function Calls
+
+A function call, such as f(a,b), where f is a value of some class type, is expanded to
+```scala
+f.apply(a,b)
+```
+So the OO-translation of
+```scala
+val f = (x : int) => x * x
+f(7)
+```
+
+would be
+```scala
+val f = new Function[Int,Int]{
+  def apply(x : Int) = x * x
+}
+f.apply(7)
+```
+
+---
+
+# Functions and Methods
+
+Note that a method such as
+```scala
+def f(x : Int) : Boolean = ???
+```
+
+is not itself a function value.
+
+But if f is used in a place where a Function type is expected, it is converted automatically to the function value
+```scala
+(x : Int) => f(x)
+```
+or, expanded
+```scala
+new Function1[Int,Boolean]{
+  def apply(x : Int) = f(x)
+}
+```
+---
 
 # Dynamic semantics
 
@@ -382,15 +444,15 @@ java.lang.StackOverflowError
 
 # Dynamic semantics
 ```scala
-def call1(x: Int) = {
+def CallByValue(x: Int) = {
   println("x1=" + x)
   println("x2=" + x)
 }
-def call2(x: => Int) = {
+def callByName(x: => Int) = {
   println("x1=" + x)
   println("x2=" + x)
 }
-def call3(x: () => Int) = {
+def zeroArityFunction(x: () => Int) = {
   println("x1=" + x())
   println("x2=" + x())
 }
@@ -408,20 +470,57 @@ def something() : Int = {
 
 ---
 
-# Dynamic semantics
+# Dynamic semantics - Call by value
 ```scala
 def something() : Int = {
   println("calling something")
   1
 }
-def call1(x: Int) = {
+def CallByValue(x: Int) = {
   println("x1=" + x)
   println("x2=" + x)
 }
-scala> call1(something())
+scala> CallByValue(something())
 calling something
 x1=1
 x2=1
+```
+
+---
+
+# Dynamic semantics - Call by name
+```scala
+def something() : Int = {
+  println("calling something")
+  1
+}
+def callByName(x: => Int) = {
+  println("x1=" + x)
+  println("x2=" + x)
+}
+scala> callByName(something())
+...
+
+```
+
+---
+
+# Dynamic semantics - Call by name
+```scala
+def something() : Int = {
+  println("calling something")
+  1
+}
+def callByName(x: => Int) = {
+  println("x1=" + x)
+  println("x2=" + x)
+}
+scala> callByName(something())
+calling something
+x1=1
+calling something
+x2=1
+
 ```
 
 ---
@@ -432,31 +531,11 @@ def something() : Int = {
   println("calling something")
   1
 }
-def call2(x: => Int) = {
-  println("x1=" + x)
-  println("x2=" + x)
-}
-scala> call2(something())
-calling something
-x1=1
-calling something
-x2=1
-
-```
-
----
-
-# Dynamic semantics
-```scala
-def something() : Int = {
-  println("calling something")
-  1
-}
-def call3(x: () => Int) = {
+def zeroArityFunction(x: () => Int) = {
   println("x1=" + x())
   println("x2=" + x())
 }
-scala> call3(something())
+scala> zeroArityFunction(something())
 <console>:14: error: type mismatch;
  found   : Int
  required: () => Int
@@ -465,22 +544,39 @@ scala> call3(something())
 
 ---
 
-# Dynamic semantics
+# Dynamic semantics - 0-arity-function
 ```scala
 def something() : Int = {
   println("calling something")
   1
 }
-def call3(x: () => Int) = {
+def zeroArityFunction(x: () => Int) = {
   println("x1=" + x())
   println("x2=" + x())
 }
-scala> scala> call3(() => something())
+scala> zeroArityFunction(() => something())
+...
+
+
+```
+
+---
+
+# Dynamic semantics - 0-arity-function
+```scala
+def something() : Int = {
+  println("calling something")
+  1
+}
+def zeroArityFunction(x: () => Int) = {
+  println("x1=" + x())
+  println("x2=" + x())
+}
+scala> zeroArityFunction(() => something())
 calling something
 x1=1
 calling something
 x2=1
-
 
 ```
 
@@ -498,6 +594,22 @@ number2: Int = 20
 
 ```
 
+---
+
+# Dynamic semantics - Lazy keyword
+```scala
+scala> lazy val number1 = { println("I am a number "); 13 }
+number1: Int = <lazy>
+
+scala> number1
+I am a number 
+res0: Int = 13
+
+scala> number1
+...
+
+
+```
 ---
 
 # Dynamic semantics - Lazy keyword
@@ -534,8 +646,24 @@ res3: Int = 20
 
 ---
 
+# Dynamic semantics - Lazy keyword
+```scala
+scala> lazy val number1 = { println("I am a number "); 13 }
+number1: Int = <lazy>
 
-# Dynamic semantics - recap
+scala> val number2 = { println("I am a number: "); 20 }
+I am a number: 
+number2: Int = 20
+
+scala> number2
+res1: Int = 20
+
+...
+```
+
+---
+
+# Dynamic semantics - summary
 
 * Call by value
 * Call by name
