@@ -1,7 +1,6 @@
 ---
 author: Carlos Tomé Cortiñas, Renate Eilers and Matthew Swart
 title: Scala
-subtitle: My title here
 theme: uucs
 mainfont: Ubuntu Light
 sansfont: Ubuntu Light
@@ -20,7 +19,6 @@ sansfont: Ubuntu Light
 ---
 
 # History
-
 From [A Brief, Incomplete, and Mostly Wrong History of Programming Languages by James
 Iry](http://james-iry.blogspot.nl/2009/05/brief-incomplete-and-mostly-wrong.html)
 
@@ -32,14 +30,55 @@ He creates Scala, a language that unifies constructs from both object oriented
 and functional languages. This pisses off both groups and each promptly declares
 jihad.
 
-
 ---
 
 # History
 
-* Scala = Scalable language
-* Released in 2003
-* Created by Prof. Martin Odersky at EPFL
+* Created by Prof. Martin Odersky at EPFL.
+* Design started in 2001.
+* Released to the public in 2003.
+* But research on Scala is still going on nowadays.
+
+---
+
+
+# Is Scala popular?
+
+* Twitter
+* Linkedin
+* The Guardian
+* FourSquare
+* Sony
+* Many more...
+
+|         | TIOBE | Redmonk |
+|:-------|:-----:|:-------:|
+| Scala   | 31    | 14      |
+| Java    | 1     |  2      |
+| Haskell | 38    |  16     |
+
+---
+
+# Projects
+
+* SBT
+* Squeryl
+* PlayFramework
+* Akka
+* Sinatra
+* React
+* Apache Kafka
+
+---
+
+# Overview of features
+
+* Scala is **F**unctional and **O**bject **O**riented.
+* Scala is **S**tatically **T**yped.
+* Scala compiles to Java bytecode and runs on the **JVM** (write once, run everywhere)
+* Scala can seamesly interoperate with Java written code.
+
+* Scala is **not** a pure language.
 
 ---
 
@@ -49,88 +88,48 @@ jihad.
 
 ---
 
-# Is Scala popular?
-
-* Twitter
-* Linkedin
-* The Guardian
-* FourSquare
-* Sony
-* etc.
-
-* TIOBE index blabla
-* Redmonk index blabla
-
----
-
-# Projects
-
-* PlayFramework
-* Akka
-* Sinatra
-* React
-
----
-
-# Overview of features
-
-
-![](img/Repl-Example.png "Alt caption"){ width=80% }
-
-
 # Object oriented but ...
 
-* Scala approach to OO programming is quite different from Java
-* Scala features different constructions and also lacks some others
-..- [Abstract] Classes
-..- Traits
-..- Objects
+* Scala approach to OO programming is quite different from Java.
+* However, it has also classes and abstract classes as in Java.
+```scala
+abstract class Animal {
+  def shout : Unit
+}
+class Dog(name : String) extends Animal{
+  def shout : Unit = println("Woof!")
+}
+```
+
+* This is actually a keypoint for the interoperability between both languages.
+
+---
+
+# Object oriented but ... (II)
+
+* In Scala there are no interfaces like in Java.
+* Scala supports out of the box type parameters (aka generics in Java).
 
 ```scala
-class Dog(name : String){
-  def sound : Unit = println("Woof!")
-  def movement : String = "Walk"
+abstract class Producer[A] {
+  def produce(x : A) : String
 }
+class IntProducer extends Producer[Int] {
+  def produce(x : Int) : String = x.toString()
+}
+
+scala> new IntProducer().produce(666)
+res1: String = 666
 ```
 
-```java
-class Dog{
-  private String name;
-  public Dog(String name){
-    this.name = name;
-  }
-  public void sound(){
-    System.out.println("Woof!")
-  }
-  public String movement(){
-    return("Walk")
-  }
-}
-```
 ---
 
-# Abstract classes
+# What really makes Scala OO different?
 
----
-
-# Object
-
-Examples.
-
----
-
-
-# Classes
-
-|              | Class | Abstract class | Trait  | Case class | Object |
-|:------------:|:-----:|:--------------:|:------:|:----------:|:------:|
-| Type parameter|       |                |        |            |
-| Value parameter             |       |                |        |            |
-| Composition       |       |                |        |            |
-| Abstract members  |       |                |        |            |
-| Concrete members  |       |                |        |            |
-|              |       |                |        |            |
-|              |       |                |        |            |
+* In Scala there is the notion of **singleton object**.
+* There are also **case classes** which are a "special" kind of classes.
+* **Traits** are the key construction in Scala, and can be seen as a mixture of Java
+  abstract classes and interfaces.
 
 ---
 
@@ -141,24 +140,43 @@ Examples.
 
 ---
 
-# Case Classes and Objects
+# Singleton objects
+
+* In Scala we are allow to define a class with only one object of such class.
+* Instantiation of the class is done at the point of usage of the object.
+
+```scala
+object Singl {
+  val int_with_missile : Int = {
+    println("Throw missiles!");
+    1
+  }
+}
+scala> val s = Singl
+Throw missiles!
+s: Singl.type = Singl$@498057bb
+```
+
+---
+
+# Case Classes and Case Objects
 
 Case classes
+
 * Immutable by default
 * Decomposable through pattern matching
 * Compared by structural equality instead of by reference
 * Succinct to instantiate and operate on
 
 Case Object
+
 * Does not take any arguments
-* Singleton object 
-* Similar to the Case class(Except for the above bullets)  
+* Singleton object
+* Similar to the Case class(Except for the above bullets)
 
 ---
 
 # Case Classes and Objects - Example
-
-
 
 ```scala
 case class Person(name : String) {
@@ -188,19 +206,16 @@ def whatDoAnySay(animal : Any) : Unit = {
 
 ---
 
-
----
-
 # Traits
 
-* Traits are the fundamental unit of code reuse in Scala
+* Traits are the fundamental unit of code reuse in **Scala**.
 
 * A trait encapsulates method and field definitions that can be reused by any
-  class through **mixin composition**
+  class through **mixin composition**.
 
-* Unlike class inheritance, a class may __mix in__ any number of traits.
+* Unlike class inheritance, a class may __mixin__ any number of traits.
 
-* We will see how this works in practice
+* We will see how this works in practice.
 
 ---
 
@@ -299,8 +314,14 @@ res7: Int = 1
 
 # Mixin composition & Linearization
 
-* When resolving the calls to __super__, the mixins are resolved through a
-* This allows for blabla
+* When resolving the calls to __super__, the mixins are resolved through process
+  called linearization.
+1. Queue $\longrightarrow$ AnyRef $\longrightarrow$ Any
+2. Filtering $\longrightarrow$ Queue $\longrightarrow$ AnyRef
+3. Incrementing $\longrightarrow$ Queue $\longrightarrow$ AnyRef
+4. BasicIntQueue $\longrightarrow$ Incrementing $\longrightarrow$ Filtering
+$\longrightarrow$ $\dots$
+
 
 ---
 
@@ -496,6 +517,25 @@ def resetCell(cell : AbsCell) = {
 
 ---
 
+# Relation between type parameters and type members
+
+```scala
+sealed trait TList[A]
+case class TNil[A]() extends TList[A]
+case class TCons[A](hd : A, tl : TList[A]) extends TList[A]
+
+sealed trait MList {
+  type T
+}
+
+case class MNil[A] extends MList
+  { type T = A }
+
+case class MCons[A] extends MList {
+```
+
+---
+
 # Intermezzo: Implicit classes
 * Scala also supports the definition of a class to be __implicit__.
 * This makes the methods defined in the class to be avaliable without ever
@@ -604,8 +644,8 @@ res1: Nothing => Nothing = $$Lambda$2921/351794524@1ca14468
 # Functions as Objects (IV)
 
 * We need to actually provide the type of the parameter explicitly, because
-  during the conversion to a function **trait** Scala can't figure out the type
-  of it.
+  during the conversion to a function **Trait** Scala can't figure out the type
+  parameters (they need to be concrete!).
 
 * Now better.
 
@@ -728,7 +768,7 @@ How does Scala evaluate expressions?
 
 
 # Dynamic semantics - example
-```scala           
+```scala
 def cyclicList(x:Int): List[Int] = {
   x :: cyclicList(x-1)
 }
@@ -744,7 +784,7 @@ java.lang.StackOverflowError
 ```scala
 def cyclicStream(x:Int): Stream[Int] = {
   x #:: cyclicStream(x-1)
-}              
+}
 
 
 scala> cyclicStream(Int.MaxValue)
@@ -901,7 +941,7 @@ scala> lazy val number1 = { println("I am a number "); 13 }
 number1: Int = <lazy>
 
 scala> val number2 = { println("I am a number: "); 20 }
-I am a number: 
+I am a number:
 number2: Int = 20
 
 
@@ -915,7 +955,7 @@ scala> lazy val number1 = { println("I am a number "); 13 }
 number1: Int = <lazy>
 
 scala> number1
-I am a number 
+I am a number
 res0: Int = 13
 
 scala> number1
@@ -931,7 +971,7 @@ scala> lazy val number1 = { println("I am a number "); 13 }
 number1: Int = <lazy>
 
 scala> number1
-I am a number 
+I am a number
 res0: Int = 13
 
 scala> number1
@@ -947,7 +987,7 @@ scala> lazy val number1 = { println("I am a number "); 13 }
 number1: Int = <lazy>
 
 scala> val number2 = { println("I am a number: "); 20 }
-I am a number: 
+I am a number:
 number2: Int = 20
 
 scala> number2
@@ -965,7 +1005,7 @@ scala> lazy val number1 = { println("I am a number "); 13 }
 number1: Int = <lazy>
 
 scala> val number2 = { println("I am a number: "); 20 }
-I am a number: 
+I am a number:
 number2: Int = 20
 
 scala> number2
