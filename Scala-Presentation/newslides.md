@@ -68,6 +68,7 @@ jihad.
 * Sinatra
 * React
 * Apache Kafka
+* Apache Spark
 
 ---
 
@@ -124,28 +125,6 @@ res1: String = 666
 
 ---
 
-# Covariance and contravariance
-
-```scala
-Parent extends GParent
-
-class Child extends Parent
-
-class Box[+A]
-
-class Box2[-A]
-
-def foo(x : Box[Parent]) : Box[Parent] = identity(x)
-
-def bar(x : Box2[Parent]) : Box2[Parent] = identity(x)
-
-foo(new Box[Child]) // success
-
-foo(new Box[GParent]) // type error
-```
-
----
-
 # What really makes Scala OO different?
 
 * In Scala there is the notion of **singleton object**.
@@ -154,6 +133,29 @@ foo(new Box[GParent]) // type error
   abstract classes and interfaces.
 
 ---
+
+# Intermezzo: Covariance and contravariance
+
+```scala
+class GrandParent
+class Parent extends GrandParent
+class Child extends Parent
+
+class CoBox[+A]
+class ContraBox[-A]
+
+def foo(x : CoBox[Parent]) : CoBox[Parent] =
+  identity(x)
+
+def bar(x : ContraBox[Parent]) : ContraBox[Parent] =
+  identity(x)
+
+foo(new CoBox[Child])       // success
+foo(new CoBox[GrandParent]) // type error
+```
+
+---
+
 
 # Immutable vs Mutable
 
@@ -169,7 +171,7 @@ x: Int = 3
 scala> val y : Int = 1
 y: Int = 1
 
-scala> y = 3 
+scala> y = 3
 <console>:12: error: reassignment to val
        y = 3
 
@@ -558,25 +560,6 @@ def resetCell(cell : AbsCell) = {
 * The method cell.set has type `cell.T => Unit`
 
 * `cell.T` is an example of a path-dependent type
-
----
-
-# Relation between type parameters and type members
-
-```scala
-sealed trait TList[A]
-case class TNil[A]() extends TList[A]
-case class TCons[A](hd : A, tl : TList[A]) extends TList[A]
-
-sealed trait MList {
-  type T
-}
-
-case class MNil[A] extends MList
-  { type T = A }
-
-case class MCons[A] extends MList {
-```
 
 ---
 
