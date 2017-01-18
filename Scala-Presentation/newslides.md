@@ -124,12 +124,56 @@ res1: String = 666
 
 ---
 
+# Covariance and contravariance
+
+```scala
+Parent extends GParent
+
+class Child extends Parent
+
+class Box[+A]
+
+class Box2[-A]
+
+def foo(x : Box[Parent]) : Box[Parent] = identity(x)
+
+def bar(x : Box2[Parent]) : Box2[Parent] = identity(x)
+
+foo(new Box[Child]) // success
+
+foo(new Box[GParent]) // type error
+```
+
+---
+
 # What really makes Scala OO different?
 
 * In Scala there is the notion of **singleton object**.
 * There are also **case classes** which are a "special" kind of classes.
 * **Traits** are the key construction in Scala, and can be seen as a mixture of Java
   abstract classes and interfaces.
+
+---
+
+# Immutable vs Mutable
+
+* Scala supports both immutable and mutable
+
+```scala
+scala> var x : Int = 1
+x: Int = 1
+
+scala> x = 3
+x: Int = 3
+
+scala> val y : Int = 1
+y: Int = 1
+
+scala> y = 3 
+<console>:12: error: reassignment to val
+       y = 3
+
+```
 
 ---
 
