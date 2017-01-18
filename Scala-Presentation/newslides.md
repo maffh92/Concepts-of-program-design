@@ -65,7 +65,7 @@ jihad.
 * Squeryl
 * PlayFramework
 * Akka
-* Sinatra
+* Finagle
 * React
 * Apache Kafka
 * Apache Spark
@@ -179,7 +179,7 @@ scala> y = 3
 
 ---
 
-# Type system
+# Type hierarchy
 
 
 ![](img/classhierarchy.png "Alt caption"){ width=80% }
@@ -239,14 +239,15 @@ case object Frog{
 
 ```scala
 def whatDoAnySay(animal : Any) : Unit = {
-    animal match {
-      case Frog => println(Frog.noise)
-      case Person(name) => println(name)
-      case 1 => println("I am an Int")
-      case 'a' => println("I am a Character")
-      case "aaaa" => println("I am a String")
-      case x => println("I am not defined in the pattern match")
-    }
+  animal match {
+    case Frog => println(Frog.noise)
+    case Person(name) => println(name)
+    case 1 => println("I am an Int")
+    case 'a' => println("I am a Character")
+    case "aaaa" => println("I am a String")
+    case x =>
+      println("Ahhh! No pattern match")
+  }
 }
 ```
 
@@ -713,10 +714,10 @@ An anomymous function such as
 ```
 is expanded to
 ```scala
-{class AnonFun extends Function1[Int.Int]{
+{class AnonFun extends Function1[Int,Int] {
     def apply(x : Int) = x * x
   }
-  new AnonFun}
+  new AnonFun()}
 ```
 or, shorter, using anonymous class syntax:
 ```scala
@@ -950,13 +951,15 @@ x2=1
 
 # Dynamic semantics - Lazy keyword
 ```scala
-scala> lazy val number1 = { println("I am a number ");
-     |   13 
-     | }
+scala> lazy val number1 = {
+  | println("I am a number ");
+  | 13
+  | }
 number1: Int = <lazy>
 
-scala> val number2 = { println("I am a number: ");
-     |   20 
+scala> val number2 = {
+     | println("I am a number: ");
+     | 20
      | }
 I am a number:
 number2: Int = 20
@@ -968,9 +971,8 @@ number2: Int = 20
 
 # Dynamic semantics - Lazy keyword
 ```scala
-scala> lazy val number1 = { println("I am a number ");
-     |   13 
-     | }
+scala> lazy val number1 = {
+     | println("I am a number "); 13}
 number1: Int = <lazy>
 
 scala> number1
@@ -979,16 +981,13 @@ res0: Int = 13
 
 scala> number1
 ...
-
-
 ```
 ---
 
 # Dynamic semantics - Lazy keyword
 ```scala
-scala> lazy val number1 = { println("I am a number ");
-     |   13 
-     | }
+scala> lazy val number1 = {
+     | println("I am a number "); 13 }
 number1: Int = <lazy>
 
 scala> number1
@@ -997,28 +996,24 @@ res0: Int = 13
 
 scala> number1
 res2: Int = 13
-
-
 ```
 ---
 
 # Dynamic semantics - Lazy keyword
 ```scala
-scala> lazy val number1 = { println("I am a number ");
-     |   13 
+scala> lazy val number1 = {
+     | println("I am a number ");
+     | 13
      | }
 number1: Int = <lazy>
 
-scala> val number2 = { println("I am a number: ");
-     |   20 
-     | }
+scala> val number2 = {
+     | println("I am a number: "); 20 }
 I am a number:
 number2: Int = 20
 
 scala> number2
 res1: Int = 20
-
-...
 ```
 
 ---
@@ -1026,12 +1021,12 @@ res1: Int = 20
 
 # Dynamic semantics - Lazy keyword
 ```scala
-scala> lazy val number1 = { println("I am a number "); 13 }
+scala> lazy val number1 = {
+  | println("I am a number "); 13}
 number1: Int = <lazy>
 
-scala> val number2 = { println("I am a number: ");
-     |   20 
-     | }
+scala> val number2 = {
+     | println("I am a number: "); 20}
 I am a number:
 number2: Int = 20
 
@@ -1052,12 +1047,20 @@ res3: Int = 20
 
 ---
 
-# Conclusion
+# Recap
 
-* It combines object oriented with functional.
-* Scala uses the Java Virtual Machine to execute the code
-* Java and Scala interoperability
+* Scala combines **O**bject **O**riented with **F**unctional.
+* But it approach differs both from Java and Haskell quite a lot.
+* Is a very interesting language.
+* The different feature we have shown are composable and allow to create awesome
+  new patterns.
+* Scala uses the Java Virtual Machine to execute the code.
+* All standart libraries from Java are avaliable.
 
+---
+
+## Thank you!
+## Any questions?
 
 
 <!-- Local Variables:  -->
