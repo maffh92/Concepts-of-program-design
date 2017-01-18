@@ -134,6 +134,13 @@ Examples.
 
 ---
 
+# Type system
+
+
+![](img/classhierarchy.png "Alt caption"){ width=80% }
+
+---
+
 # Case Classes and Objects
 
 Case classes
@@ -147,15 +154,6 @@ Case Object
 * Singleton object 
 * Similar to the Case class(Except for the above bullets)  
 
-```scala
-case class Person(name : String) {
-  def noise = "I am a person"
-}
-
-case object Frog{
-  def noise : String = "CROAK"
-}
-```
 ---
 
 # Case Classes and Objects - Example
@@ -303,13 +301,6 @@ res7: Int = 1
 
 * When resolving the calls to __super__, the mixins are resolved through a
 * This allows for blabla
-
----
-
-# Type system
-
-
-![](img/classhierarchy.png "Alt caption"){ width=80% }
 
 ---
 
@@ -562,7 +553,7 @@ true
   scala.Function1[A,B], which is roughly defined as follows.
 
 ```scala
-trait Function1[-A,+B]{
+trait Function1[A,B]{
   def apply(x : A) : B
 }
 ```
@@ -571,25 +562,6 @@ So functions are object that implement such __Trait__ with apply
 
 There are also traits Function2, Function3, ... for
 functions which take more parameters (Currently up to 22)
-
----
-
-# Anonymous functions
-
-* We have used in the example of __AbsCell__ how we can instantiate a __Trait__ with
-  an anonymous class that implements the abstract methods.
-```scala
-scala> ((x : Int) => x + 1)(1)
-res1: Int = 2
-```
-
-* Which is a shorthand for:
-```scala
-scala> (new Function1[Int,Int] {
-  def apply(x : Int) : Int = x + 1
-  })(1)
-res1: Int = 2
-```
 
 ---
 
@@ -743,56 +715,6 @@ res0: Int => Int = $$Lambda$1130/1813375175@56380231
 scala> f(1)(2)
 res1: Int = 2
 ```
-
----
-
-# Case Classes
-
-```scala
-case class Person(name : String) extends Animal{
-  def noise = "I am a person"
-}
-case class Tiger() extends Animal{
-  override def noise : String = "Grr"
-}
-
-case class Frog() extends Animal{
-  def noise : String = "CROAK"
-}
-```
----
-
-# Pattern Match
-
-```scala
-object AnimalNoise{
-  def mkSound(animal : Animal) : Unit =
-    animal match {
-      case Frog() => println(Frog().noise)
-      case Person(name) => println(name)
-      case x => println(x.noise)
-    }
-}
-```
----
-
-# Pattern Match
-
-```scala
-object pattern{
-  def all(allTypes : Any) : Unit = {
-    allTypes match{
-      case (x,1) => println("(x,1)")
-      case (x,y) => println("(x,y)")
-      case x : String => println(x)
-      case Tiger() => println(Tiger().noise)
-      case 1 => println("One")
-      case true => print("True")
-    }
-  }
-}
-```
-
 ---
 
 # Dynamic semantics
@@ -804,19 +726,12 @@ How does Scala evaluate expressions?
 
 ---
 
-# Dynamic semantics
-```scala
-def cyclicStream(x:Int): Stream[Int] = {
-  x #:: cyclicStream(x-1)
-}              
+
+# Dynamic semantics - example
+```scala           
 def cyclicList(x:Int): List[Int] = {
   x :: cyclicList(x-1)
 }
-scala> cyclicStream(Int.MaxValue)
-   final val MaxValue: Int(2147483647)
-
-scala> cyclicStream(Int.MaxValue)
-res1: Stream[Int] = Stream(2147483647, ?)
 
 scala> cyclicList(Int.MaxValue)
 java.lang.StackOverflowError
@@ -825,6 +740,20 @@ java.lang.StackOverflowError
 
 ---
 
+# Dynamic semantics - example
+```scala
+def cyclicStream(x:Int): Stream[Int] = {
+  x #:: cyclicStream(x-1)
+}              
+
+
+scala> cyclicStream(Int.MaxValue)
+res1: Stream[Int] = Stream(2147483647, ?)
+
+```
+
+
+---
 
 # Dynamic semantics
 ```scala
