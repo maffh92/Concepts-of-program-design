@@ -923,10 +923,14 @@ x2=1
 
 # Dynamic semantics - Lazy keyword
 ```scala
-scala> lazy val number1 = { println("I am a number "); 13 }
+scala> lazy val number1 = { println("I am a number ");
+     |   13 
+     | }
 number1: Int = <lazy>
 
-scala> val number2 = { println("I am a number: "); 20 }
+scala> val number2 = { println("I am a number: ");
+     |   20 
+     | }
 I am a number:
 number2: Int = 20
 
@@ -937,7 +941,9 @@ number2: Int = 20
 
 # Dynamic semantics - Lazy keyword
 ```scala
-scala> lazy val number1 = { println("I am a number "); 13 }
+scala> lazy val number1 = { println("I am a number ");
+     |   13 
+     | }
 number1: Int = <lazy>
 
 scala> number1
@@ -953,7 +959,9 @@ scala> number1
 
 # Dynamic semantics - Lazy keyword
 ```scala
-scala> lazy val number1 = { println("I am a number "); 13 }
+scala> lazy val number1 = { println("I am a number ");
+     |   13 
+     | }
 number1: Int = <lazy>
 
 scala> number1
@@ -969,10 +977,34 @@ res2: Int = 13
 
 # Dynamic semantics - Lazy keyword
 ```scala
+scala> lazy val number1 = { println("I am a number ");
+     |   13 
+     | }
+number1: Int = <lazy>
+
+scala> val number2 = { println("I am a number: ");
+     |   20 
+     | }
+I am a number:
+number2: Int = 20
+
+scala> number2
+res1: Int = 20
+
+...
+```
+
+---
+
+
+# Dynamic semantics - Lazy keyword
+```scala
 scala> lazy val number1 = { println("I am a number "); 13 }
 number1: Int = <lazy>
 
-scala> val number2 = { println("I am a number: "); 20 }
+scala> val number2 = { println("I am a number: ");
+     |   20 
+     | }
 I am a number:
 number2: Int = 20
 
@@ -981,23 +1013,6 @@ res1: Int = 20
 
 scala> number2
 res3: Int = 20
-```
-
----
-
-# Dynamic semantics - Lazy keyword
-```scala
-scala> lazy val number1 = { println("I am a number "); 13 }
-number1: Int = <lazy>
-
-scala> val number2 = { println("I am a number: "); 20 }
-I am a number:
-number2: Int = 20
-
-scala> number2
-res1: Int = 20
-
-...
 ```
 
 ---
