@@ -1051,11 +1051,11 @@ res3: Int = 20
 
 * Scala combines **O**bject **O**riented with **F**unctional.
 * But it approach differs both from Java and Haskell quite a lot.
-* Is a very interesting language.
-* The different feature we have shown are composable and allow to create awesome
+* It is a very interesting language.
+* The different features we have shown are **composable** and allow to create awesome
   new patterns.
 * Scala uses the Java Virtual Machine to execute the code.
-* All standart libraries from Java are avaliable.
+* All standard libraries from Java are available.
 
 ---
 
