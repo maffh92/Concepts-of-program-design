@@ -743,20 +743,6 @@ new Function1[Int,Boolean]{
 ```
 ---
 
-
-# Currying - Anonymous function
-```scala
-var f = (x : Int) => (y : Int) => x + 1
-f: Int => (Int => Int) = $$Lambda$1113/551797833@2c58dcb1
-
-scala> f(1)
-res0: Int => Int = $$Lambda$1130/1813375175@56380231
-
-scala> f(1)(2)
-res1: Int = 2
-```
----
-
 # Dynamic semantics
 
 How does Scala evaluate expressions?
@@ -878,7 +864,7 @@ x2=1
 
 ---
 
-# Dynamic semantics
+# Dynamic semantics - 0-arity-function
 ```scala
 def something() : Int = {
   println("calling something")
