@@ -703,9 +703,9 @@
 [debug] 	[NOT REQUIRED] org.scala-sbt#test-agent;0.13.8!test-agent.jar
 [debug] 	[NOT REQUIRED] org.scala-sbt#test-interface;1.0!test-interface.jar
 [debug] 	[NOT REQUIRED] org.scala-sbt#apply-macro;0.13.8!apply-macro.jar
-[debug] :: resolution report :: resolve 1628ms :: artifacts dl 49ms
+[debug] :: resolution report :: resolve 2274ms :: artifacts dl 163ms
 [debug] 	report for default#generic$sbt_2.12;1.0 default produced in /home/maffh/Development/Concepts-of-program-design/Development/Generic/target/resolution-cache/reports/default-generic$sbt_2.12-default.xml
-[debug] 	resolve done (1628ms resolve - 49ms download)
+[debug] 	resolve done (2274ms resolve - 163ms download)
 [debug] Using inline dependencies specified in Scala.
 [debug] :: resolving dependencies :: default#generic$sources_2.12;1.0
 [debug] 	confs: [default]
@@ -1069,6 +1069,6 @@
 [debug] 	[NOT REQUIRED] org.scala-sbt#precompiled-2_8_2;0.13.8!precompiled-2_8_2.jar(src)
 [debug] 	[NOT REQUIRED] org.scala-sbt#precompiled-2_9_2;0.13.8!precompiled-2_9_2.jar(src)
 [debug] 	[NOT REQUIRED] org.scala-sbt#precompiled-2_9_3;0.13.8!precompiled-2_9_3.jar(src)
-[debug] :: resolution report :: resolve 251ms :: artifacts dl 38ms
+[debug] :: resolution report :: resolve 215ms :: artifacts dl 94ms
 [debug] 	report for default#generic$sources_2.12;1.0 default produced in /home/maffh/Development/Concepts-of-program-design/Development/Generic/target/resolution-cache/reports/default-generic$sources_2.12-default.xml
-[debug] 	resolve done (251ms resolve - 38ms download)
+[debug] 	resolve done (215ms resolve - 94ms download)
