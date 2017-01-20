@@ -4,7 +4,7 @@
 		module="generic$sbt_2.12"
 		revision="1.0"
 		status="integration"
-		publication="20170120153556"
+		publication="20170120201925"
 	/>
 	<configurations>
 		<conf name="default" visibility="public"/>
