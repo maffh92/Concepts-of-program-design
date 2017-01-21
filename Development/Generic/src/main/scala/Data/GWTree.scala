@@ -35,7 +35,7 @@ object WTreeObjectRep{
 
   class GenericWTree[G[_]](implicit gg : Generic[G]){
       def wtree[A,W](a : G[A],w : G[W]) :  G[WTree[A,W]] = {
-        ??? ///rwtree(a,w)
+        rwtree(a,w)(this,gg)
       }
   }
 
