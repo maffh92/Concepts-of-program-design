@@ -2,6 +2,12 @@ package Data
 
 import Base.GenericObject._
 
+/*
+* This file is used for the representation of a binary tree.
+* We have implemented the FRep and FRep2. This means that Binary tree supports the function that are
+* implemented by either the Generic or Generic2 class
+*/
+
 sealed trait BinTree[T]
 
 case class Leaf[T](leaf : T) extends BinTree[T]
@@ -9,7 +15,12 @@ case class Bin[T](left : BinTree[T], right : BinTree[T]) extends BinTree[T]
 
 object Tree{
 
+  //General representation
   type BinTreeRep[T] = Plus[T,Product[BinTree[T],BinTree[T]]]
+
+  /*
+  The fromBinTree and ToBinTree functions are used as a isomorphic function. It is implemented in the BinTreeIso
+   */
   def fromBinTree[T](tree : BinTree[T]) : BinTreeRep[T] = {
     tree match{
       case Leaf(x) => Inl(x)
@@ -30,15 +41,11 @@ object Tree{
   }
 
 
+  //The bintree is used for the general dispatcher for generic with 1 parameter.
   def binTree1[A,G[_]](g : G[A])(implicit gg : Generic[G]): G[BinTree[A]] = {
     gg.view(binTreeIso[A],() => gg.plus(g,gg.product(binTree1[A,G](g),binTree1[A,G](g))))
   }
-
-  def binTree2[A,B,G[_,_]](g : G[A,B])(implicit gg : Generic2[G]): G[BinTree[A],BinTree[B]] = {
-    gg.view(binTreeIso[A],binTreeIso[B],() => gg.plus(g,gg.product(binTree2[A,B,G](g),binTree2[A,B,G](g))))
-  }
-
-  implicit def frepTree1[G[_]](implicit g : Generic[G]) : FRep[G,BinTree] = {
+  implicit def frepTree[G[_]](implicit g : Generic[G]) : FRep[G,BinTree] = {
     new FRep[G,BinTree] {
       override def frep[A](g1 : G[A]) : G[BinTree[A]] = {
         binTree1(g1)
@@ -46,42 +53,22 @@ object Tree{
     }
   }
 
-  implicit def frepTree2[G[_,_]](implicit g : Generic2[G]) : FRep2[G,BinTree] = {
+
+   //The bintree and frep2Tree is used for the general dispatcher for generic with 2 parameter.
+  def binTree2[A,B,G[_,_]](g : G[A,B])(implicit gg : Generic2[G]): G[BinTree[A],BinTree[B]] = {
+    gg.view(binTreeIso[A],binTreeIso[B],() => gg.plus(g,gg.product(binTree2[A,B,G](g),binTree2[A,B,G](g))))
+  }
+  implicit def frep2Tree[G[_,_]](implicit g : Generic2[G]) : FRep2[G,BinTree] = {
     new FRep2[G,BinTree] {
       override def frep2[A, B](g1: G[A, B]): G[BinTree[A], BinTree[B]] = binTree2(g1)
     }
   }
 
+  /*
+  gTree is used for the general distpacher for GRep
+   */
   def gTree[A, G[_]](implicit gg: Generic[G], a: GRep[G, A]) = new GRep[G, BinTree[A]] {
     override def grep: G[BinTree[A]] = binTree1(a.grep)
   }
 
-
-
-
-
-
-
 }
-
-
-
-
-//bintree a =  view isoBinTree (constr "Leaf" 1 a <|>
-//constr "Bin" 2 (bintree a <*> bintree a))
-//
-//isoBinTree = Iso fromBinTree toBinTree
-//
-//fromBinTree (Leaf x)              =  Inl x
-//fromBinTree (Bin l r)             =  Inr (l :*: r)
-//
-//toBinTree (Inl x)                 =  Leaf x
-//toBinTree (Inr (l :*: r))         =  Bin l r
-//
-//instance FunctorRep BinTree where
-//functorRep   =  bintree
-//
-//instance (Generic g, GRep g a) => GRep g (BinTree a) where
-//over = bintree over
-
-

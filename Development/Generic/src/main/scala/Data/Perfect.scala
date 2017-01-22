@@ -1,5 +1,11 @@
+/*
+This file contains the generic representation for Perfect. This is one of the data typed defined by the paper.
+The Perfect case class represents a tree that for each node either has 2 direct children or zero.
+ */
+
 package Data
 import Base.GenericObject._
+import Functions.MapObject.Map
 
 sealed trait Perfect[A]
 
@@ -52,13 +58,26 @@ object PerfectTree {
     gg.view(isoPerfectTree[A],() => gg.plus(g,perfecttree(fork(g))))
   }
 
-  implicit def frepPerfect[G[_]](implicit g : Generic[G]) : FRep[G,Perfect] = {
-      new FRep[G,Perfect] {
-        override def frep[A](g1 : G[A]) : G[Perfect[A]] = {
-          perfecttree(g1)
-        }
-      }
+  def fork2[A,B,G[_,_]](g : G[A,B])(implicit gg : Generic2[G]): G[Fork[A],Fork[B]] = {
+    gg.view(isoForkTree[A],isoForkTree[B],() => gg.product(g,g))
+  }
+
+  def perfecttree2[A,B,G[_,_]](g : G[A,B])(implicit gg : Generic2[G]): G[Perfect[A],Perfect[B]] = {
+    gg.view(isoPerfectTree[A],isoPerfectTree[B],() => gg.plus(g,perfecttree2(fork2(g))))
+  }
+
+
+  implicit def frep2Perfect(implicit g : Generic2[Functions.MapObject.Map]) : Base.GenericObject.FRep2[Functions.MapObject.Map,Data.Perfect] = {
+    new Base.GenericObject.FRep2[Functions.MapObject.Map,Perfect] {
+      override def frep2[A, B](g1: Map[A, B]): Map[Perfect[A], Perfect[B]] = perfecttree2(g1)
     }
+  }
+
+  implicit def frep2Fork(implicit g : Generic2[Functions.MapObject.Map]) : Base.GenericObject.FRep2[Functions.MapObject.Map,Data.Fork] = {
+    new Base.GenericObject.FRep2[Functions.MapObject.Map,Fork] {
+      override def frep2[A, B](g1: Map[A, B]): Map[Fork[A], Fork[B]] = fork2(g1)
+    }
+  }
 
   implicit def frepFork[G[_]](implicit g : Generic[G]) : FRep[G,Fork] = {
     new FRep[G,Fork] {
@@ -67,6 +86,15 @@ object PerfectTree {
       }
     }
   }
+
+  implicit def frepPerfect[G[_]](implicit g : Generic[G]) : FRep[G,Perfect] = {
+      new FRep[G,Perfect] {
+        override def frep[A](g1 : G[A]) : G[Perfect[A]] = {
+          perfecttree(g1)
+        }
+      }
+    }
+
 
   def gPerfect[A, G[_]](implicit gg: Generic[G], a: GRep[G, A]) = new GRep[G, Perfect[A]] {
     override def grep: G[Perfect[A]] = perfecttree(a.grep)

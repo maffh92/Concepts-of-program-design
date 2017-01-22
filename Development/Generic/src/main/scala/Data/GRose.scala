@@ -12,6 +12,7 @@ case class GNode[F[_],A](V : A, r : F[GRose[F,A]]) extends GRose[F,A]
 
 
 object GRose{
+  //General representation of the General rose case class
   type GRoseRep[F[_],A] = Product[A,F[GRose[F,A]]]
 
   def fromGrose[F[_],A](tree : GRose[F,A]): GRoseRep[F,A] ={
@@ -19,20 +20,22 @@ object GRose{
       case GNode(v,r) => Product(v,r)
     }
   }
-
+  //from general representaion of Grose to GRose
   def toGrose[F[_],A](tree : GRoseRep[F,A] ): GRose[F,A] = {
     tree match {
       case Product(v, r) => GNode(v, r)
     }
   }
 
+  //isomorphic function
   def isoGrose[F[_],A] = new Iso[GRose[F,A],Product[A,F[GRose[F,A]]]]{
     override def from: GRose[F,A] => GRoseRep[F,A] = fromGrose
 
     override def to: GRoseRep[F,A] => GRose[F,A] = toGrose
   }
-//
-  def gCrush[A, G[_],F[_]](implicit gg: Generic[G], a1: GRep[G, A],a2: GRep[G, F[GRose[F,A]]]) = new GRep[G, GRose[F,A]] {
+
+  //Represention dispatcher for GCrush. In order to use this representation we have to create a function that uses GRep
+  implicit def gCrush[A, G[_],F[_]](implicit gg: Generic[G], a1: GRep[G, A],a2: GRep[G, F[GRose[F,A]]]) = new GRep[G, GRose[F,A]] {
     override def grep: G[GRose[F, A]] = gRosetree1(a1.grep)(a2.grep)
   }
 
@@ -46,6 +49,9 @@ object GRose{
   }
 }
 
+/*
+The below code to implement a representation of a more concreter GRose
+ */
 object RoseObject{
   type RoseRep[A] = Product[A,List[Rose[A]]]
 
@@ -75,20 +81,6 @@ object RoseObject{
   def roseTree2[A,B,G[_,_]](a : G[A,B])(f : G[List[Rose[A]],List[Rose[B]]])(implicit gg : Generic2[G]) = {
     gg.view(isoRose[A],isoRose[B],() => gg.product(a,f))
   }
-
-//  implicit def frepTree1[G[_]](implicit g : Generic[G]) : FRep[G,Rose] = {
-//    new FRep[G,Rose] {
-//      override def frep[A](g1 : G[A]) : G[BinTree[A]] = {
-//        roseTree1(g1)
-//      }
-//    }
-//  }
-//
-//  implicit def frepTree2[G[_,_]](implicit g : Generic2[G]) : FRep2[G,Rose] = {
-//    new FRep2[G,Rose] {
-//      override def frep2[A, B](g1: G[A, B]): G[Rose[A], Rose[B]] = roseTree2(g1)
-//    }
-//  }
 }
 
 

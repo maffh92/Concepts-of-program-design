@@ -3,9 +3,10 @@ package Functions
 import Base.GenericObject._
 
 import scala.language.{higherKinds, postfixOps}
-/**
-  * This file is still under construction, because the representation for the Lists and the crush does not compile.
-  */
+
+/*
+This file contains the implementation of the Crush function. You can see Crush as a general function of a fold.
+*/
 object CrushObject {
 
   class Assoc
@@ -13,33 +14,13 @@ object CrushObject {
   case object AssocRight extends Assoc
 
   trait Crush[B,A] {
-    def selCrush: Assoc => A => B => B
+    def selCrush(asc: Assoc)(a: A)(b: B) :  B
   }
 
-  def rsumCrush[A,B,D](ra : Crush[D,A])(rb : Crush[D,B])(asc : Assoc)(plus : Plus[A,B])(d : D) : D = {
-    plus match{
-      case Inl(a) => ra.selCrush(asc)(a)(d)
-      case Inr(b) => rb.selCrush(asc)(b)(d)
-    }
-  }
-
-  def rprodCrush[A,B,D](ra : Crush[D,A])(rb : Crush[D,B])(asc : Assoc)(product : Product[A,B])(d : D) : D = {
-    product match{
-      case Product(a,b) => {
-        asc match{
-          case AssocLeft => rb.selCrush(asc)(b)(ra.selCrush(asc)(a)(d))
-          case AssocRight => ra.selCrush(asc)(a)(rb.selCrush(asc)(b)(d))
-        }
-      }
-    }
-
-  }
-
-
-  def rtypeCrush[A,B,D](iso1 : Iso[B,A])(ra : Crush[D,A])(asc : Assoc)(b : B)(d : D) : D  = {
-    ra.selCrush(asc)(iso1.from(b))(d)
-  }
-
+  //The first time the project gets compiled it will give an error of ambiguous errors.
+  // In order to solve this error you have to comment the mkCrush function and build the project.
+  // Next uncomment the file and build the project again.
+  // The second time you build the project should not give any errors.
   implicit def mkCrush[B] : crushC[B] = new crushC[B]
 
   class crushC[B]extends Generic[({type AB[A] = Crush[B,A]})#AB]{
@@ -48,7 +29,7 @@ object CrushObject {
     def idCrush[A] =
     {
       new Crush[B,A]{
-        override def selCrush = _ => _ => id
+        override def selCrush(asc: Assoc)(a: A)(b: B) = id(b)
       }
     }
 
@@ -61,28 +42,36 @@ object CrushObject {
     def plus[X,Y](ra : Crush[B,X], rb : Crush[B,Y]) =
     {
       new Crush[B,Plus[X,Y]]{
-        def selCrush = rsumCrush[X,Y,B](ra)(rb)
+        override def selCrush(asc: Assoc)(plus: Plus[X, Y])(d: B): B = {
+          plus match{
+            case Inl(a) => ra.selCrush(asc)(a)(d)
+            case Inr(b) => rb.selCrush(asc)(b)(d)
+          }
+        }
       }
     }
 
     def product[X,Y](ra : Crush[B,X], rb : Crush[B,Y]) =
     {
       new Crush[B,Product[X,Y]]{
-        def selCrush = rprodCrush[X,Y,B](ra)(rb)
+        override def selCrush(asc: Assoc)(product: Product[X, Y])(d: B): B =
+        {
+          product match{
+            case Product(a,b) => {
+              asc match{
+                case AssocLeft => rb.selCrush(asc)(b)(ra.selCrush(asc)(a)(d))
+                case AssocRight => ra.selCrush(asc)(a)(rb.selCrush(asc)(b)(d))
+              }
+            }
+          }
+        }
       }
     }
 
 
-    def view[X,Y](ra : Crush[B,X], rb : Crush[B,Y]) =
-    {
-      new Crush[B,Product[X,Y]]{
-        def selCrush = rprodCrush[X,Y,B](ra)(rb)
-      }
-    }
-    // def product[A,B](a : G[A], b : G[B]) : G[Product[A,B]]
-    def view[X,Y](iso1 : Iso[Y,X], a: () => Crush[B,X]) : Crush[B,Y] = {
+    def view[X,Y](iso1 : Iso[Y,X], ra: () => Crush[B,X]) : Crush[B,Y] = {
       new Crush[B,Y]{
-        def selCrush = rtypeCrush[X,Y,B](iso1)(a())
+        override def selCrush(asc: Assoc)(a: Y)(b: B): B = ra().selCrush(asc)(iso1.from(a))(b)
       }
     }
 
@@ -92,7 +81,7 @@ object CrushObject {
 // The actually crush functions:
   def crush[B,A,F[_]](asc : Assoc)(f : A => B => B)(z : B)(x : F[A])(implicit rep : FRep[({type AB[A] = Crush[B,A]})#AB,F]): B = {
     val fCrush = new Crush[B,A]{
-      override def selCrush= _ => f
+      override def selCrush(asc: Assoc)(a: A)(b: B) = f(a)(b)
     }
     rep.frep(fCrush).selCrush(asc)(x)(z)
   }
@@ -105,15 +94,18 @@ object CrushObject {
     crush(AssocLeft)(f)(z)(x)
   }
 
-
+  //The sum function takes the product of some data generic data type, which has a general dispatcher defined by the FRep class.
   def sum[B,F[_]](x : F[B])(implicit number : Number[B], rep : FRep[({type AB[X] = Crush[B,X]})#AB,F]) : B = {
     crushr(number.plus)(number.zero)(x)
   }
+
 
   def product[B,F[_]](x : F[B])(implicit number : Number[B], rep : FRep[({type AB[X] = Crush[B,X]})#AB,F]) : B = {
     crushr(number.multiple)(number.one)(x)
   }
 
+
+  //The number trait is used in a similar way as the Num a in Haskell.
   trait Number[A] {
     // an identity element
     def zero : A

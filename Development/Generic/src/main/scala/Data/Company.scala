@@ -2,6 +2,10 @@ package Data
 
 import Base.GenericObject._
 
+/*
+This file contains the representation of the Company class. This is one of the data types defined by the paper.
+ */
+
 sealed trait Company
 case class C(deps : List[Dept]) extends Company
 
@@ -22,6 +26,7 @@ sealed class Salary
 case class S(n : Int) extends  Salary
 
 object Company {
+  //General representation of each of the different types
   type Name = List[Char]
   type Manager = Employee
   type Adress = List[Char]
@@ -32,6 +37,7 @@ object Company {
   type PersonRep = Product[Name,Adress]
   type SalaryRep = Int
 
+  //Defined for each type a different general view function.
   class GenericCompany[G[_]](implicit gl: GenericList[G],g: Generic[G]) {
     def company : G[Company] = g.view(isoCompany,() => gl.list(depth))
     def depth : G[Dept] = g.view(isoDept,() => g.product(gl.list(g.char),g.product(employee,gl.list(unit1))))
@@ -41,6 +47,9 @@ object Company {
     def salary : G[Salary] = g.view(isoSalary,() => g.int)
   }
 
+  /*
+  The below function are used to defined for each of the type an isomorphic function.
+  */
   def isoCompany = new Iso[Company,CompanyRep]{
     override def from = fromCompany
     override def to = toCompany
@@ -133,55 +142,4 @@ object Company {
       case Inr(d) => new DU(d)
     }
   }
-
-
-
-
-
-//  def fromBinTree[T](tree : BinTree[T]) : BinTreeRep[T] = {
-//    tree match{
-//      case Leaf(x) => Inl(x)
-//      case Bin(l,r) => Inr(Product(l,r))
-//    }
-//  }
-//
-//  def toBinTree[T](plus : BinTreeRep[T]) : BinTree[T] = {
-//    plus match{
-//      case Inl(x) => Leaf(x)
-//      case Inr(Product(l,r)) => Bin(l,r)
-//    }
-//  }
-//
-//  def binTreeIso[T] = new Iso[BinTree[T],BinTreeRep[T]]{
-//    override def from = fromBinTree
-//    override def to = toBinTree
-//  }
-//
-//
-//  def binTree1[A,G[_]](g : G[A])(implicit gg : Generic[G]): G[BinTree[A]] = {
-//    gg.view(binTreeIso[A],() => gg.plus(g,gg.product(binTree1[A,G](g),binTree1[A,G](g))))
-//  }
-//
-//  def binTree2[A,B,G[_,_]](g : G[A,B])(implicit gg : Generic2[G]): G[BinTree[A],BinTree[B]] = {
-//    gg.view(binTreeIso[A],binTreeIso[B],() => gg.plus(g,gg.product(binTree2[A,B,G](g),binTree2[A,B,G](g))))
-//  }
-//
-//  implicit def frepTree1[G[_]](implicit g : Generic[G]) : FRep[G,BinTree] = {
-//    new FRep[G,BinTree] {
-//      override def frep[A](g1 : G[A]) : G[BinTree[A]] = {
-//        binTree1(g1)
-//      }
-//    }
-//  }
-//
-//  implicit def frepTree2[G[_,_]](implicit g : Generic2[G]) : FRep2[G,BinTree] = {
-//    new FRep2[G,BinTree] {
-//      override def frep2[A, B](g1: G[A, B]): G[BinTree[A], BinTree[B]] = binTree2(g1)
-//    }
-//  }
-//
-//  def gTree[A, G[_]](implicit gg: Generic[G], a: GRep[G, A]) = new GRep[G, BinTree[A]] {
-//    override def grep: G[BinTree[A]] = binTree1(a.grep)
-//  }
-
 }

@@ -12,8 +12,10 @@ object WTreeObjectRep{
     gg.view(isoTree,() => gg.plus(a,gg.plus(gg.product(ggTree.wtree(a,w),ggTree.wtree(a,w)),gg.product(ggTree.wtree(a,w),w))))
   }
 
+  //General representation of the WTree case class
   type WRTreeRep[A,W] = Plus[A,Plus[Product[WTree[A,W],WTree[A,W]],Product[WTree[A,W],W]]]
 
+  //isomorphic function between the original representation and the general representation
   def isoTree[A,W] : Iso[WTree[A,W],WRTreeRep[A,W]] = new Iso[WTree[A,W],WRTreeRep[A,W]] {
     override def from: (WTree[A, W]) => WRTreeRep[A, W] = fromTree
 

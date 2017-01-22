@@ -7,15 +7,22 @@ import  Functions.CrushObject._
 
 
 object GList {
+  //General representation of a list. A list is either a Cons or a Cons with a tail
   type ListS[A] = Plus[Unit,Product[A,List[A]]]
 
-  def fromList[A] : (List[A] => ListS[A]) = l =>
+  /*
+  The functions FromList and ToList are just to create a isomorphic function in
+  order to go from the general representation and the other way around.
+  listIso is the isomorphic function
+   */
+
+  def fromList[A](l : List[A]) : ListS[A] =
     l match {
       case Nil 	   => Inl(Unit)
       case (x :: xs) => Inr(Product(x,xs))
     }
 
-  def toList[A] : (ListS[A] => List[A]) = r =>
+  def toList[A](r : ListS[A]) : List[A] =
     r match {
       case Inl(_) => Nil
       case Inr(Product(x,xs)) => x :: xs
@@ -26,16 +33,49 @@ object GList {
     def to = toList
   }
 
+  /*
+    frepList is used as a helper function for the general dispatcher. It uses the Generic class that just takes 1 parameter.
+   */
   def frepList[A,G[_]](g : G[A])(implicit gg : Generic[G]): G[List[A]] = {
     gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepList[A,G](g))))
   }
+  implicit def RepList[G[_]](implicit g : Generic[G]) : FRep[G,List] = {
+    new FRep[G,List] {
+      def frep[A](g1 : G[A]) : G[List[A]] = frepList(g1)
+    }
+  }
 
+  /* frepListCurried is creates an instance for the general dispatcher FRep,
+    which can be used by the functions extended by the Generic class that takes 1 parameter.
+   The difference between frepList is that this function uses a lambda type, such that it can obtain the parameter B when the frep function is called.
+   */
+  def frepListCrush[A,B](g : Crush[B, A])(implicit gg : Generic[({type AB[A] = Crush[B,A]})#AB]): Crush[B, List[A]] = {
+    gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepListCrush[A,B](g))))
+  }
+  implicit def frepListCurried[B](implicit g : Generic[({type AB[A] = Functions.CrushObject.Crush[B,A]})#AB]) : Base.GenericObject.FRep[({type AB[A] = Functions.CrushObject.Crush[B,A]})#AB,List] = {
+    new FRep[({type AB[X] = Crush[B,X]})#AB,List]{
+      override def frep[A](g1: Crush[B, A]): Crush[B, List[A]] = frepListCrush(g1)
+    }
+  }
 
+    /*
+      frep2List is used as a helper function for the general dispatcher. It uses the Generic2 class that just takes 2 parameters.
+      It is explicit uses for the Map function. Unfortunately, we could not solve to it using a general parameter.
+     */
   def frep2List[A,B,G[_,_]](g : G[A,B])(implicit gg : Generic2[G]): G[List[A],List[B]] = {
     gg.view(listIso[A],listIso[B],() => gg.plus(gg.unit,gg.product(g,frep2List[A,B,G](g))))
   }
 
+  implicit val Rep2List = new Base.GenericObject.FRep2[Functions.MapObject.Map,List]{
+    def frep2[A,B](g1: Map[A,B]) : Map[List[A],List[B]] = {
+      frep2List(g1)
+    }
+  }
 
+/*
+* The below code defines a Rep dispatcher, but our current functions do not use this Rep dispatcher.
+ * The difference between Frep and Rep is that for Rep we have to define for every type a dispatcher(i.e int,char, etc)
+* */
 
   trait Rep[A]{
     def rep[G[_]](implicit gg : Generic[G]) : G[A]
@@ -72,49 +112,4 @@ object GList {
       frepList(a.rep)
     }
   }
-
-
-
-  implicit def RepList[G[_]](implicit g : Generic[G]) : FRep[G,List] = {
-    new FRep[G,List] {
-      def frep[A](g1 : G[A]) : G[List[A]] = {
-        frepList(g1)
-      }
-    }
-  }
-
-  implicit def RepList2[B](implicit g : Generic[({type AB[A] = Functions.CrushObject.Crush[B,A]})#AB]) : Base.GenericObject.FRep[({type AB[A] = Functions.CrushObject.Crush[B,A]})#AB,List] = {
-    new FRep[({type AB[X] = Crush[B,X]})#AB,List]{
-      override def frep[A](g1: Crush[B, A]): Crush[B, List[A]] = frepList2(g1)
-    }
-  }
-
-
-
-  def frepList2[A,B](g : Crush[B, A])(implicit gg : Generic[({type AB[A] = Crush[B,A]})#AB]): Crush[B, List[A]] = {
-    gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepList2[A,B](g))))
-  }
-
-  implicit val Rep2List = new Base.GenericObject.FRep2[Functions.MapObject.Map,List]{
-    def frep2[A,B](g1: Map[A,B]) : Map[List[A],List[B]] = {
-      frep2List(g1)
-    }
-  }
-
-  //  Need to write out the full type for implicits in a different file. Need to find out why
-  //  implicit def Rep2List[G[_,_]](implicit g : Generic2[G]) : FRep2[G,List] = new FRep2[G,List] {
-  //    def frep2[A,B](g1 : G[A,B]) : G[List[A], List[B]] = {
-  //      frep2List(g1)
-  //    }
-  //  }
-//  implicit def RepList2[G[_,_],B](implicit g : Generic[({type AB[A] = G[B,A]})#AB]) : FRep[({type AB[A] = G[B,A]})#AB,List] = {
-//    new FRep[({type AB[X] = G[B,X]})#AB,List]{
-//      override def frep[A](g1: G[B, A]): G[B, List[A]] = frepList2(g1)
-//    }
-//  }
-//  implicit def RepList2[G[_,_],B](implicit g : Generic[({type AB[A] = G[B,A]})#AB]) : FRep[({type AB[A] = G[B,A]})#AB,List] = {
-//    new FRep[({type AB[X] = G[B,X]})#AB,List]{
-//      override def frep[A](g1: G[B, A]): G[B, List[A]] = frepList2(g1)
-//    }
-//  }
 }
