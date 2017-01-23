@@ -5,7 +5,7 @@ The Perfect case class represents a tree that for each node either has 2 direct 
 
 package Data
 import Base.Generic._
-import Functions.MapObject.Map
+import Functions.Map
 
 sealed trait Perfect[A]
 
@@ -67,14 +67,14 @@ object PerfectTree {
   }
 
 
-  implicit def frep2Perfect(implicit g : Generic2[Functions.MapObject.Map]) : Base.Generic.FRep2[Functions.MapObject.Map,Data.Perfect] = {
-    new Base.Generic.FRep2[Functions.MapObject.Map,Perfect] {
+  implicit def frep2Perfect(implicit g : Generic2[Functions.Map]) : Base.Generic.FRep2[Functions.Map,Data.Perfect] = {
+    new Base.Generic.FRep2[Functions.Map,Perfect] {
       override def frep2[A, B](g1: Map[A, B]): Map[Perfect[A], Perfect[B]] = perfecttree2(g1)
     }
   }
 
-  implicit def frep2Fork(implicit g : Generic2[Functions.MapObject.Map]) : Base.Generic.FRep2[Functions.MapObject.Map,Data.Fork] = {
-    new Base.Generic.FRep2[Functions.MapObject.Map,Fork] {
+  implicit def frep2Fork(implicit g : Generic2[Functions.Map]) : Base.Generic.FRep2[Functions.Map,Data.Fork] = {
+    new Base.Generic.FRep2[Functions.Map,Fork] {
       override def frep2[A, B](g1: Map[A, B]): Map[Fork[A], Fork[B]] = fork2(g1)
     }
   }

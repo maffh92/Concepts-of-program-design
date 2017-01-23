@@ -15,8 +15,7 @@ trait Compare[A]{
 }
 
 object Compare {
-
-
+  
   def rsumCompare[A, B](ra: Compare[A])(rb: Compare[B])(plus1: Plus[A, B])(plus2: Plus[A, B]): Ordering = {
     plus1 match {
       case Inl(a1) => {
