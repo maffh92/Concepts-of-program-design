@@ -1,5 +1,6 @@
 import org.scalatest.FlatSpec
-import Functions.CollectObject._
+import Functions.Collect._
+import scalaz.std.list._
 
 class CollectTest extends FlatSpec {
   "Collect" should "get all integers from the list" in {

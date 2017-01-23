@@ -1,6 +1,6 @@
 package Data
 
-import Base.GenericObject.{GRep, _}
+import Base.Generic.{GRep, _}
 /**
   * Created by maffh on 19-1-17.
   */

@@ -1,9 +1,9 @@
 package Data
 import scala.language.higherKinds
 import scala.language.postfixOps
-import Base.GenericObject._
+import Base.Generic._
 import Functions.MapObject._
-import  Functions.CrushObject._
+import Functions.CrushObject._
 
 
 object GList {
@@ -52,7 +52,7 @@ object GList {
   def frepListCrush[A,B](g : Crush[B, A])(implicit gg : Generic[({type AB[A] = Crush[B,A]})#AB]): Crush[B, List[A]] = {
     gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepListCrush[A,B](g))))
   }
-  implicit def frepListCurried[B](implicit g : Generic[({type AB[A] = Functions.CrushObject.Crush[B,A]})#AB]) : Base.GenericObject.FRep[({type AB[A] = Functions.CrushObject.Crush[B,A]})#AB,List] = {
+  implicit def frepListCurried[B](implicit g : Generic[({type AB[A] = Functions.CrushObject.Crush[B,A]})#AB]) : Base.Generic.FRep[({type AB[A] = Functions.CrushObject.Crush[B,A]})#AB,List] = {
     new FRep[({type AB[X] = Crush[B,X]})#AB,List]{
       override def frep[A](g1: Crush[B, A]): Crush[B, List[A]] = frepListCrush(g1)
     }
@@ -66,7 +66,7 @@ object GList {
     gg.view(listIso[A],listIso[B],() => gg.plus(gg.unit,gg.product(g,frep2List[A,B,G](g))))
   }
 
-  implicit val Rep2List = new Base.GenericObject.FRep2[Functions.MapObject.Map,List]{
+  implicit val Rep2List = new Base.Generic.FRep2[Functions.MapObject.Map,List]{
     def frep2[A,B](g1: Map[A,B]) : Map[List[A],List[B]] = {
       frep2List(g1)
     }

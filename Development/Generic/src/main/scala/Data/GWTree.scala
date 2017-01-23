@@ -1,8 +1,8 @@
 package Data
 
-import Base.GenericObject._
+import Base.Generic._
 
-sealed class WTree[A,W]
+sealed trait WTree[A,W]
 case class WLeaf[A,W](a : A) extends WTree[A,W]
 case class WBin[A,W](x : WTree[A,W], y : WTree[A,W]) extends WTree[A,W]
 case class WithWeight[A,W](x : WTree[A,W], w : W) extends WTree[A,W]
@@ -22,7 +22,7 @@ object WTreeObjectRep{
     override def to: (WRTreeRep[A, W]) => WTree[A, W] = toTree
   }
 
-  def fromTree[A,W](tree : WTree[A,W]) : WRTreeRep[A,W] = tree match{
+  def fromTree[A,W](tree : WTree[A,W]) : WRTreeRep[A,W] = tree match {
     case WLeaf(x) => Inl(x)
     case WBin(l,r) => Inr(Inl(Product(l,r)))
     case WithWeight(a,b) => Inr(Inr(Product(a,b)))

@@ -2,64 +2,37 @@ package Base
 
 import scala.language.{higherKinds, postfixOps}
 
-object GenericObject {
+object Generic {
 
   /*
-	Representation types
-*/
+	Representation types.
+  */
 
-  sealed class Unit
+  // Unit type
+  case object Unit
 
-  object Unit extends Unit
-
+  // Product type
   case class Product[A, B](a: A, b: B)
 
-  class Plus[A, B]
+  // Coproduct type
+  sealed abstract class Plus[A, B]
 
   case class Inl[A, B](a: A) extends Plus[A, B]
 
   case class Inr[A, B](b: B) extends Plus[A, B]
 
+  // Iso[A,B] represents an isomorphism between types A and B.
   trait Iso[A, B] {
     def from: A => B
-
-    def to: B => A
-  }
-
-  def fromList[A]: (List[A] => Plus[Unit, Product[A, List[A]]]) = l =>
-    l match {
-      case Nil => Inl(Unit)
-      case (x :: xs) => Inr(Product(x, xs))
-    }
-
-  def toList[A]: (Plus[Unit, Product[A, List[A]]] => List[A]) = r =>
-    r match {
-      case Inl(_) => Nil
-      case Inr(Product(x, xs)) => x :: xs
-    }
-
-  def listIso[A] = new Iso[List[A], Plus[Unit, Product[A, List[A]]]] {
-    def from = fromList
-
-    def to = toList
-  }
-
-  def rList[A, G[_]](g: G[A])(implicit gg: Generic[G]): G[List[A]] = {
-    gg.view(listIso[A], () => gg.plus(gg.unit, gg.product(g, rList[A, G](g))))
-  }
-
-  class GenericList[G[_]](implicit gg: Generic[G]) {
-    def list[A](x : G[A]) : G[List[A]] = rList(x)
+    def to:   B => A
   }
 
   type Arity = Int
   type Name = String
 
-
   /*
-	Generic: Base
-*/
-
+	  Generic: Base, kind of arguments *
+  */
   trait Generic[G[_]] {
     def unit: G[Unit]
 
@@ -76,7 +49,9 @@ object GenericObject {
     def view[A, B](iso: Iso[B, A], a: () => G[A]): G[B]
   }
 
-
+  /*
+    Generic: Kind of arguments * -> *
+  */
   trait Generic2[G[_, _]] {
     def unit: G[Unit, Unit]
 
@@ -93,7 +68,9 @@ object GenericObject {
     def view[A1, A2, B1, B2](iso1: Iso[A2, A1], iso2: Iso[B2, B1], a: () => G[A1, B1]): G[A2, B2]
   }
 
-
+  /*
+    Generic representation
+  */
   trait GRep[G[_], A] {
     def grep: G[A]
   }
@@ -114,18 +91,13 @@ object GenericObject {
     def grep: G[Plus[A, B]] = gg.plus[A, B](a.grep, b.grep)
   }
 
-
   class Gproduct[A, B, G[_]](implicit gg: Generic[G], a: GRep[G, A], b: GRep[G, B]) extends GRep[G, Product[A, B]] {
     def grep: G[Product[A, B]] = gg.product[A, B](a.grep, b.grep)
   }
 
-  class GList[A, G[_]](implicit glg: GenericList[G], a: GRep[G, A]) extends GRep[G, List[A]] {
-    def grep: G[List[A]] = glg.list[A](a.grep)
-  }
-
-/*
- FREP
-*/
+  /*
+    FREP
+  */
 
   trait FRep[G[_],F[_]]{
     def frep[A](g1 : G[A]) : G[F[A]]
@@ -134,13 +106,6 @@ object GenericObject {
   trait FRep2[G[_,_],F[_]]{
     def frep2[A,B](g1 : G[A,B]) : G[F[A],F[B]]
   }
-
-  /*
-	Auxiliary functions
-*/
-  def const[A,B](a : A)(b : B) : A = a
-  def id[A](a : A) : A = a
-
 
 }
 

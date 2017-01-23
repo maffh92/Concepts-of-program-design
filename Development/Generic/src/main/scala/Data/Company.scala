@@ -1,7 +1,7 @@
 package Data
 
-import Base.GenericObject._
-
+import Base.Generic._
+import Base.Instances.List._
 /*
 This file contains the representation of the Company class. This is one of the data types defined by the paper.
  */
@@ -22,7 +22,7 @@ case class E(person : Person, salary : Salary) extends Employee
 sealed trait Person
 case class P(name : List[Char], address : List[Char]) extends Person
 
-sealed class Salary
+sealed trait Salary
 case class S(n : Int) extends  Salary
 
 object Company {

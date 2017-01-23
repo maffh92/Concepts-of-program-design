@@ -1,6 +1,7 @@
 package Functions
 
-import Base.GenericObject._
+import Base.Generic._
+import Base.Ops._
 
 object MapObject {
 

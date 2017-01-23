@@ -1,6 +1,6 @@
 package Data
 
-import Base.GenericObject._
+import Base.Generic._
 
 /*
 * This file is used for the representation of a binary tree.

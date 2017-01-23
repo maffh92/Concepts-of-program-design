@@ -1,6 +1,7 @@
 package Functions
 
-import Base.GenericObject._
+import Base.Generic._
+import Base.Ops._
 
 import scala.language.{higherKinds, postfixOps}
 
@@ -21,7 +22,7 @@ object CrushObject {
   // In order to solve this error you have to comment the mkCrush function and build the project.
   // Next uncomment the file and build the project again.
   // The second time you build the project should not give any errors.
-  implicit def mkCrush[B] : crushC[B] = new crushC[B]
+  //implicit def mkCrush[B] : crushC[B] = new crushC[B]
 
   class crushC[B]extends Generic[({type AB[A] = Crush[B,A]})#AB]{
 

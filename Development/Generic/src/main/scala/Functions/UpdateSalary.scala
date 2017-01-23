@@ -1,6 +1,6 @@
 package Functions
 
-import Base.GenericObject._
+import Base.Generic._
 /**
   * Created by maffh on 20-1-17.
   */
