@@ -1,9 +1,9 @@
 package Functions
 
-import Base.Generic._
+import Base._
 import Base.Ops._
 
-abstract class Encode[A] {
+trait Encode[A] {
   def encode_ :  A => List[Bit]
 }
 
@@ -12,6 +12,7 @@ case object One extends Bit
 case object Zero extends Bit
 
 object Encode {
+
   implicit object EncodeC extends Generic[Encode] {
     def unit : Encode[Unit] = new Encode[Unit] {def encode_ = const(Nil)}
     def plus[A,B](a : Encode[A], b : Encode[B]) : Encode[Plus[A,B]] = new Encode[Plus[A,B]] {
@@ -31,10 +32,14 @@ object Encode {
     def int = new Encode[Int]{
       def encode_ = encodeInt
     }
+    def string = new Encode[String]{
+      def encode_ = encodeString
+    }
     def view[A,B](iso : Iso[B,A],  a : () => Encode[A]) : Encode[B] = new Encode[B]{
         def encode_ = x => a().encode_(iso.from(x))
     }
   }
+
 
   // Extend to fit all characters
   def encodeChar(x : Char) : List[Bit] = {
@@ -42,6 +47,10 @@ object Encode {
       case '0' => List(Zero)
       case '1' => List(One)
     }
+  }
+
+  def encodeString(x : String) : List[Bit] = {
+    x.flatMap(encodeChar).toList
   }
 
   // Extend to fit all integers

@@ -1,9 +1,6 @@
 package Functions
 
-import Base.Generic._
-/**
-  * Created by maffh on 20-1-17.
-  */
+import Base._
 
 trait UpdateSalary[A]{
   def updateSalary(f : Float)(x : A) : A
@@ -26,6 +23,8 @@ class GUpdateSalary extends Generic[UpdateSalary]{
   }
 
   override def char: UpdateSalary[Char] = idSalary
+
+  override def string: UpdateSalary[String] = idSalary
 
   override def int: UpdateSalary[Arity] = idSalary
 

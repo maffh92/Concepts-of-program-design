@@ -77,4 +77,5 @@ object Eq {
   ) : Eq[A] = instance((x,y) => env.value.eq(gen.to(x),gen.to(y)))
 
   def geq[A](x : A, y : A)(implicit e : Eq[A]) = e.eq(x,y)
+
 }

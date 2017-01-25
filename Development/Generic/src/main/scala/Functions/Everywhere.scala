@@ -1,6 +1,6 @@
 package Functions
 
-import Base.Generic._
+import Base._
 import Base.Ops._
 
 import scala.language.{higherKinds, postfixOps}
@@ -34,6 +34,10 @@ object  Everywhere {
     }
 
     def int : Everywhere[A,Int] = new Everywhere[A,Int] {
+      def everywhere_ = const(id(_)) _
+    }
+
+    def string : Everywhere[A,String] = new Everywhere[A,String] {
       def everywhere_ = const(id(_)) _
     }
 

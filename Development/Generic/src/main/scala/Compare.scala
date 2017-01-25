@@ -1,5 +1,5 @@
 import scala.language.{higherKinds, postfixOps}
-import Base.Generic._
+import Base._
 import scalaz.Alternative
 
 /**

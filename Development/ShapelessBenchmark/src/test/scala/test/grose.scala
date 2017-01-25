@@ -1,4 +1,8 @@
-object GRoseTest {
+package test
+
+import org.scalatest.FlatSpec
+
+class GRoseTest extends FlatSpec {
   import shapeless.{Generic, everywhere}
 
   import types.{GRose}

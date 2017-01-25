@@ -1,6 +1,6 @@
 package Data
 
-import Base.Generic._
+import Base._
 
 sealed trait WTree[A,W]
 case class WLeaf[A,W](a : A) extends WTree[A,W]

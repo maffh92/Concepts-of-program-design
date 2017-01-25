@@ -12,18 +12,15 @@ package types
  * type Address = String
  */
 
-sealed trait Company
-case class C(deps : List[Departament]) extends Company
+case class Company(deps : List[Dept])
 
-sealed trait Departament
 case class Dept(name : String, manager : String, dunits : List[DUnit])
 
 sealed trait DUnit
-case class PU(empl : Employee) extends DUnit
-case class DU(dept : Departament) extends DUnit
+case class PU(empl : Employee)    extends DUnit
+case class DU(dept : Dept) extends DUnit
 
-sealed trait Employee
-case class E(person : Person, salary : Float) extends Employee
+case class Employee(person : Person, salary : Salary)
+case class Person(name : String, address : String)
 
-sealed trait Person
-case class P(name : String, address : String)
+case class Salary(sal : Int)

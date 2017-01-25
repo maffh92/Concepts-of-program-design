@@ -1,12 +1,16 @@
-import benchmark.{Eq, Show}
-import shapeless.Generic
+package test
 
-object PTreeTest {
-  import types.{Perfect, Zero, Succ}
-  import benchmark.Eq._
-  import benchmark.Show._
+import org.scalatest.FlatSpec
+import types.{Perfect, Succ, Zero}
+import benchmark._
+import shapeless.PolyDefns.->
+import shapeless._
+
+class PTreeTest extends FlatSpec {
 
   val l1 : Perfect[Int] = Zero(1)
+  val l2 : Perfect[String] = Succ(Zero(("Node1", "Node2")))
+
   val g1 : Generic[Perfect[Int]] = Generic[Perfect[Int]]
 
   // Shapeless is able to automatically derive a Generic instance
@@ -20,5 +24,11 @@ object PTreeTest {
 
   // val e1 : Eq[Perfect[Int]] = Eq[Perfect[Int]
 
-  println("Not impl")
+  "Append" should "append to all nodes" in {
+    val afterAppend : Perfect[String] = Succ(Zero(("I'm Node1", "I'm Node2")))
+    object append extends ->((x : String) => "I'm " + x)
+
+    assert(everywhere(append)(l2) == afterAppend)
+  }
+
 }

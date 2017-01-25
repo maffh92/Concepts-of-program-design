@@ -1,6 +1,6 @@
 package Functions
 
-import Base.Generic._
+import Base._
 import Base.Ops._
 
 import scala.language.{higherKinds, postfixOps}
@@ -24,7 +24,7 @@ trait Crush[B,A] {
 
 
 object Crush {
-  implicit def mkCrush[B] : CrushC[B] = new CrushC[B]
+  //implicit def mkCrush[B] : CrushC[B] = new CrushC[B]
   class CrushC[B] extends Generic[({type AB[A] = Crush[B, A]})#AB] {
     def idCrush[A]: Crush[B, A] = new Crush[B, A] {
       override def selCrush(asc: Assoc)(a: A)(b: B) = id(b)
@@ -35,6 +35,8 @@ object Crush {
     def char = idCrush
 
     def int = idCrush
+
+    def string = idCrush
 
     def plus[X, Y](ra: Crush[B, X], rb: Crush[B, Y]) = new Crush[B, Plus[X, Y]] {
       def selCrush(asc: Assoc)(plus: Plus[X, Y])(d: B): B = plus match {

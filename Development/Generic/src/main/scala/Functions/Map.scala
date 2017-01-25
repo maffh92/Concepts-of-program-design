@@ -1,6 +1,6 @@
 package Functions
 
-import Base.Generic._
+import Base._
 import Base.Ops._
 
 trait Map[A,B]{
@@ -19,6 +19,8 @@ object Map {
     def char = idMap
 
     def int = idMap
+
+    def string = idMap
 
     //In the product we map the function to both variables.
     def product[A1, A2, B1, B2](ra: Map[A1, A2], rb: Map[B1, B2]) = new Map[Product[A1, B1], Product[A2, B2]] {

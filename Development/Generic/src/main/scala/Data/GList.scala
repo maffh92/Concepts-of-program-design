@@ -1,7 +1,7 @@
 package Data
 import scala.language.higherKinds
 import scala.language.postfixOps
-import Base.Generic._
+import Base._
 import Base.Instances._
 import Functions._
 import Functions.Crush._
@@ -9,7 +9,7 @@ import Functions.Map._
 
 object GList {
   //General representation of a list. A list is either a Cons or a Cons with a tail
-  type ListS[A] = Plus[Unit,Product[A,List[A]]]
+  type ListRep[A] = Plus[Unit,Product[A,List[A]]]
 
   /*
   The functions FromList and ToList are just to create a isomorphic function in
@@ -17,23 +17,37 @@ object GList {
   listIso is the isomorphic function
    */
 
-  def fromList[A](l : List[A]) : ListS[A] =
-    l match {
-      case Nil 	   => Inl(Unit)
-      case (x :: xs) => Inr(Product(x,xs))
-    }
-
-  def toList[A](r : ListS[A]) : List[A] =
-    r match {
-      case Inl(_) => Nil
-      case Inr(Product(x,xs)) => x :: xs
-    }
-
-  def listIso[A]  = new Iso[List[A],ListS[A]] {
+  implicit def listIso[A]  = new Iso[List[A],ListRep[A]] {
+    def fromList[A](l : List[A]) : ListRep[A] =
+      l match {
+        case Nil 	   => Inl(Unit)
+        case (x :: xs) => Inr(Product(x,xs))
+      }
+    def toList[A](r : ListRep[A]) : List[A] =
+      r match {
+        case Inl(_) => Nil
+        case Inr(Product(x,xs)) => x :: xs
+      }
     def from = fromList
     def to = toList
   }
 
+
+  implicit def rList[A, G[_]](implicit gg: Generic[G], g: G[A]): G[List[A]] = {
+    gg.view(listIso[A], () => gg.plus(gg.unit, gg.product(g, rList[A, G](gg,g))))
+  }
+
+  implicit def GList1[A, G[_]](implicit gg: Generic[G], a: GRep[G,A]): GRep[G,List[A]] = new GRep[G,List[A]] {
+    def grep : G[List[A]] = rList(gg,a.grep)
+  }
+
+  class GenericList[G[_]](implicit gg: Generic[G]) {
+    def list[A](x : G[A]) : G[List[A]] = rList(gg,x)
+  }
+
+  class GList[A, G[_]](implicit glg: GenericList[G], a: GRep[G, A]) extends GRep[G, List[A]] {
+    def grep: G[List[A]] = glg.list[A](a.grep)
+  }
   /*
     frepList is used as a helper function for the general dispatcher. It uses the Generic class that just takes 1 parameter.
    */
@@ -53,7 +67,7 @@ object GList {
   def frepListCrush[A,B](g : Crush[B, A])(implicit gg : Generic[({type AB[A] = Crush[B,A]})#AB]): Crush[B, List[A]] = {
     gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepListCrush[A,B](g))))
   }
-  implicit def frepListCurried[B](implicit g : Generic[({type AB[A] = Functions.Crush[B,A]})#AB]) : Base.Generic.FRep[({type AB[A] = Functions.Crush[B,A]})#AB,List] = {
+  implicit def frepListCurried[B](implicit g : Generic[({type AB[A] = Functions.Crush[B,A]})#AB]) : Base.FRep[({type AB[A] = Functions.Crush[B,A]})#AB,List] = {
     new FRep[({type AB[X] = Crush[B,X]})#AB,List]{
       override def frep[A](g1: Crush[B, A]): Crush[B, List[A]] = frepListCrush(g1)
     }
@@ -67,7 +81,7 @@ object GList {
     gg.view(listIso[A],listIso[B],() => gg.plus(gg.unit,gg.product(g,frep2List[A,B,G](g))))
   }
 
-  implicit val Rep2List = new Base.Generic.FRep2[Functions.Map,List]{
+  implicit val Rep2List = new Base.FRep2[Functions.Map,List]{
     def frep2[A,B](g1: Map[A,B]) : Map[List[A],List[B]] = {
       frep2List(g1)
     }

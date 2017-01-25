@@ -1,9 +1,7 @@
 package Data
 
-import Base.Generic.{GRep, _}
-/**
-  * Created by maffh on 19-1-17.
-  */
+import Base._
+
 sealed trait Rose[A]
 case class Node[A](v : A, r : List[Rose[A]]) extends Rose[A]
 

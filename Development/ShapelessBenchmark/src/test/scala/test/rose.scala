@@ -1,6 +1,10 @@
-object RoseTest {
-  import types.{Rose, Node}
-  import benchmark.Eq._
+package test
+
+import org.scalatest.FlatSpec
+import benchmark.Eq._
+import types.{Node, Rose}
+
+class RoseTest extends FlatSpec{
 
   val l1 : Rose[Int] = Node(1,List())
   val l2 : Rose[Int] = Node(2,List(l1))
