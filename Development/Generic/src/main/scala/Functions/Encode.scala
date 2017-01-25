@@ -12,7 +12,7 @@ case object One extends Bit
 case object Zero extends Bit
 
 object Encode {
-  class EncodeC extends Generic[Encode] {
+  implicit object EncodeC extends Generic[Encode] {
     def unit : Encode[Unit] = new Encode[Unit] {def encode_ = const(Nil)}
     def plus[A,B](a : Encode[A], b : Encode[B]) : Encode[Plus[A,B]] = new Encode[Plus[A,B]] {
       def encode_ = x => x match {

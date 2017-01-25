@@ -21,10 +21,10 @@ trait Crush[B,A] {
   // In order to solve this error you have to comment the mkCrush function and build the project.
   // Next uncomment the file and build the project again.
   // The second time you build the project should not give any errors.
-  //implicit def mkCrush[B] : crushC[B] = new crushC[B]
+
 
 object Crush {
-
+  implicit def mkCrush[B] : CrushC[B] = new CrushC[B]
   class CrushC[B] extends Generic[({type AB[A] = Crush[B, A]})#AB] {
     def idCrush[A]: Crush[B, A] = new Crush[B, A] {
       override def selCrush(asc: Assoc)(a: A)(b: B) = id(b)
@@ -55,7 +55,7 @@ object Crush {
     def view[X, Y](iso1: Iso[Y, X], ra: () => Crush[B, X]): Crush[B, Y] = new Crush[B, Y] {
       def selCrush(asc: Assoc)(a: Y)(b: B): B = ra().selCrush(asc)(iso1.from(a))(b)
     }
-
+  }
     // The actually crush functions:
     def crush[B, A, F[_]](asc: Assoc)(f: A => B => B)(z: B)(x: F[A])(implicit rep: FRep[({type AB[A] = Crush[B, A]})#AB, F]): B = {
       val fCrush = new Crush[B, A] {
@@ -106,7 +106,6 @@ object Crush {
       def multiple(x: Int)(y: Int) = x * y
     }
 
-  }
 }
 
 

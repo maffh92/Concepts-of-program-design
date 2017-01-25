@@ -63,6 +63,25 @@ type Name = String
 
 
 
+/*
+help functions
+*/
+
+trait Number[A] {
+  // an identity element
+  def empty: A
+  // an associative operation
+  def plus(x: A)(y: A): A
+  def multiple(x: A)(y: A): A
+}
+
+implicit val IntMonoid = new Number[Int] {
+    def empty = 0
+    def plus(x: Int)(y: Int) = x + y
+    def multiple(x: Int)(y: Int) = x * y
+}
+
+
 
 /*
 	Rep
@@ -72,26 +91,92 @@ trait Rep[A]{
 	def rep[G[_]](implicit gg : Generic[G]) : G[A] 
 }
 
-implicit object RepUnit extends Rep[Unit]{
-	def rep[G[_]](implicit gg : Generic[G]) : G[Unit] = gg unit 
+trait Rep2[A,B]{
+	def rep[G[_,_]](implicit gg : Generic2[G]) : G[A,B] 
 }
 
-implicit object RepChar extends Rep[Char]{
-	def rep[G[_]](implicit gg : Generic[G]) : G[Char] = gg char 
+implicit val grepUnit = {
+	new Rep[Unit]{
+		def rep[G[_]](implicit gg : Generic[G]) : G[Unit] = gg.unit 
+	}
 }
 
-class RepProduct[A,B] (implicit a : Rep[A],b : Rep[B]) extends Rep[Product[A,B]]{
-	def rep[G[_]](implicit gg : Generic[G]) : G[Product[A,B]] = {
-		gg product[A,B](a.rep,b.rep)
+implicit val grep2Unit = {
+	new Rep2[Unit,Unit]{
+		def rep[G[_,_]](implicit gg : Generic2[G]) : G[Unit,Unit] = gg.unit 
 	}
 }
 
 
-class RepList[A] (implicit a : Rep[A]) extends Rep[List[A]]{
-	def rep[G[_]](implicit gg : Generic[G]) : G[List[A]] = {
-		frepList(a.rep)
+
+implicit val grepChar : Rep[Char] = {
+	new Rep[Char]{
+		def rep[G[_]](implicit gg : Generic[G]) : G[Char] = gg.char 
+	}
+} 
+
+implicit val grep2Char : Rep2[Char,Char] = {
+	new Rep2[Char,Char]{
+		def rep[G[_,_]](implicit gg : Generic2[G]) : G[Char,Char] = gg.char 
+	}
+} 
+
+implicit def grepProduct[A,B] (implicit a : Rep[A],b : Rep[B]) : Rep[Product[A,B]] = {
+	new Rep[Product[A,B]]{
+		def rep[G[_]](implicit gg : Generic[G]) : G[Product[A,B]] = {
+			gg.product[A,B](a.rep,b.rep)
+		}
 	}
 }
+
+// Map[Product[A1,B1],Product[A2,B2]]
+
+
+implicit def grep2Product[A1,A2,B1,B2] (implicit a : Rep2[A1,A2],b : Rep2[B1,B2]) : Rep2[Product[A1,B1],Product[A2,B2]] = {
+	new Rep2[Product[A1,B1],Product[A2,B2]]{
+		def rep[G[_,_]](implicit gg : Generic2[G]) : G[Product[A1,B1],Product[A2,B2]] = {
+			gg.product(a.rep,b.rep)
+		}
+	}
+}
+
+
+implicit def grepPlus[A,B] (implicit a : Rep[A],b : Rep[B]) : Rep[Plus[A,B]] = {
+	new Rep[Plus[A,B]]{
+		def rep[G[_]](implicit gg : Generic[G]) : G[Plus[A,B]] = {
+			gg.plus[A,B](a.rep,b.rep)
+		}
+	}
+}
+
+
+implicit def grep2Plus[A1,A2,B1,B2] (implicit a : Rep2[A1,A2],b : Rep2[B1,B2]) : Rep2[Plus[A1,B1],Plus[A2,B2]] = {
+	new Rep2[Plus[A1,B1],Plus[A2,B2]]{
+		def rep[G[_,_]](implicit gg : Generic2[G]) : G[Plus[A1,B1],Plus[A2,B2]] = {
+			gg.plus(a.rep,b.rep)
+		}
+	}
+}
+
+
+implicit def grepList[A](implicit a : Rep[A]) : Rep[List[A]] = {
+	new Rep[List[A]]{
+		def rep[G[_]](implicit gg : Generic[G]) : G[List[A]] = {
+			frepList(a.rep)
+		}
+	}
+}
+
+
+implicit def grep2List[A,B](implicit a : Rep2[A,B]) : Rep2[List[A],List[B]] = {
+	new Rep2[List[A],List[B]]{
+		def rep[G[_,_]](implicit gg : Generic2[G]) : G[List[A],List[B]] = {
+			frep2List(a.rep)
+		}
+	}
+}
+
+
 
 
 
@@ -207,95 +292,15 @@ def map[A,B,F[_]](f : A => B)(functor : F[A])(implicit rep : FRep2[Map, F]) : F[
 		return(rep frep2(fMap) selMap(functor))
 }
 
+// def mapRep[A,B,F[_]](f : A => B)(functor : List[A])(implicit rep : Rep2[A,B], g : Generic2[Map]) : scala.Unit = {
+// 		val fMap = new Map[A,B]{
+// 			def selMap = f
+// 		}
+// 		val x = rep.rep(g) //.selMap(functor)
+// }
 
 
-/*
-  Map functions
-*/
 
-class Assoc
-case object AssocLeft extends Assoc
-case object AssocRight extends Assoc
-
-trait Crush[B,A]{ 
-	def selCrush : Assoc => A => B => B
-}
-
-def rsumCrush[A,B,D](ra : Crush[D,A])(rb : Crush[D,B])(asc : Assoc)(plus : Plus[A,B])(d : D) : D = {
-	plus match{
-		case Inl(a) => ra.selCrush(asc)(a)(d)
-		case Inr(b) => rb.selCrush(asc)(b)(d)
-	}
-}
-
-def rprodCrush[A,B,D](ra : Crush[D,A])(rb : Crush[D,B])(asc : Assoc)(product : Product[A,B])(d : D) : D = {
-	product match{
-		case Product(a,b) => {
-				asc match{
-					case AssocLeft => rb.selCrush(asc)(b)(ra.selCrush(asc)(a)(d))
-					case AssocRight => ra.selCrush(asc)(a)(rb.selCrush(asc)(b)(d))
-			}
-		}
-	}
-	
-}
-
-
-def rtypeCrush[A,B,D](iso1 : Iso[B,A])(ra : Crush[D,A])(asc : Assoc)(b : B)(d : D) : D  = {
-	ra.selCrush(asc)(iso1.from(b))(d)
-}
-
-
-object crushC{
-	implicit def mkCrush[Z] = new crushC[Z] 
-}
-
-class crushC[B] extends Generic[({type AB[A] = Crush[B,A]})#AB]{
-
-	def idCrush[A] = 
-	{
-		new Crush[B,A]{
-			override def selCrush = _ => _ => id
-		}
-	}
-
- 
-
-	def unit = idCrush
-	def char = idCrush
-	def int  = idCrush
-	
-// 
-
-	def plus[X,Y](ra : Crush[B,X], rb : Crush[B,Y]) = 
-	{
-		new Crush[B,Plus[X,Y]]{
-			def selCrush = rsumCrush[X,Y,B](ra)(rb)
-		}
-	}
-
-	def product[X,Y](ra : Crush[B,X], rb : Crush[B,Y]) = 
-	{
-		new Crush[B,Product[X,Y]]{
-			def selCrush = rprodCrush[X,Y,B](ra)(rb)
-		}
-	}
-	
-
-	def view[X,Y](ra : Crush[B,X], rb : Crush[B,Y]) = 
-	{
-		new Crush[B,Product[X,Y]]{
-			def selCrush = rprodCrush[X,Y,B](ra)(rb)
-		}
-	}
-	// def product[A,B](a : G[A], b : G[B]) : G[Product[A,B]]
-	def view[X,Y](iso1 : Iso[Y,X], a: () => Crush[B,X]) : Crush[B,Y] = {
-		new Crush[B,Y]{
-			def selCrush = rtypeCrush[X,Y,B](iso1)(a())
-		}
-	}
-
-}
 
 
 /* 
@@ -303,10 +308,6 @@ Representations
 
 */
 
-
- def frepList2[A,G[_]](g : Crush[Int, A])(implicit gg : Generic[({type AB[A] = Crush[Int,A]})#AB]): Crush[Int, List[A]] = {
-    gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepList2[A,G](g))))
-  }
 
 implicit def Rep2List[G[_,_]](implicit g : Generic2[G]) : FRep2[G,List] = new FRep2[G,List] {
 	def frep2[A,B](g1 : G[A,B]) : G[List[A], List[B]] = {
@@ -325,53 +326,12 @@ implicit def RepList[G[_]](implicit g : Generic[G]) : FRep[G,List] = {
 } 
 
 
-implicit def RepList2[G[_]](implicit g : Generic[({type AB[A] = Crush[Int,A]})#AB]) : FRep[({type AB[A] = Crush[Int,A]})#AB,List] = {
-  new FRep[({type AB[X] = Crush[Int,X]})#AB,List]{
-    override def frep[A](g1: Crush[Int, A]): Crush[Int, List[A]] = frepList2(g1)
-  }
-}
 
-
-
-
-def crush[B,A,F[_]](asc : Assoc)(f : A => B => B)(z : B)(x : F[A])(implicit rep : FRep[({type AB[A] = Crush[B,A]})#AB,F]): B = {
-	val fCrush = new Crush[B,A]{ 
-	  override def selCrush= _ => f
-	}
- 	rep.frep(fCrush).selCrush(asc)(x)(z)
-}
-
-def crushr[B,A,F[_]](f : A => B => B)(z : B)(x : F[A])(implicit rep : FRep[({type AB[A] = Crush[B,A]})#AB,F]): B = {
-	crush(AssocRight)(f)(z)(x)
-}
-
-def crushl[B,A,F[_]](f : A => B => B)(z : B)(x : F[A])(implicit rep : FRep[({type AB[A] = Crush[B,A]})#AB,F]): B = {
-	crush(AssocLeft)(f)(z)(x)
-}
-
-// def plusFunction[A](x : String)(y : String) = x + y
-
-def sum[X,B,F[_]](x : F[B])(implicit number : Number[B], rep : FRep[({type AB[X] = Crush[B,X]})#AB,F]) : B = {
-	crushr(number.plus)(number.empty)(x)
-}
 
 
 // def hoi[F[_],B] (implicit rep : FRep[({type AB[X] = Crush[B,X]})#AB,F])  = rep
 // val hoi1 = hoi
 
-trait Number[A] {
-  // an identity element
-  def empty: A
-  // an associative operation
-  def plus(x: A)(y: A): A
-  def multiple(x: A)(y: A): A
-}
-
-implicit val IntMonoid = new Number[Int] {
-    def empty = 0
-    def plus(x: Int)(y: Int) = x + y
-    def multiple(x: Int)(y: Int) = x * y
-}
 
 
 val lijst = List(1,2,3)
@@ -437,10 +397,6 @@ type BinTreeRep[T] = Plus[T,Product[BinTree[T],BinTree[T]]]
     }
   }
 
-  trait GRep[G[_], A] {
-    def grep: G[A]
-  }
-
   def gTree[A, G[_]](implicit gg: Generic[G], a: GRep[G, A]) = new GRep[G, BinTree[A]] {
     override def grep: G[BinTree[A]] = binTree1(a.grep)
   }
@@ -451,4 +407,102 @@ type BinTreeRep[T] = Plus[T,Product[BinTree[T],BinTree[T]]]
 def increase(x : Int) = x + 1
 val listInt : List[Int] = List(1,3,6,9)
 val tree : BinTree[Int] = Bin(Leaf(2),Leaf(10))
+
+
+abstract class Encode[A] {
+  def encode_ :  A => List[Bit]
+}
+
+sealed class Bit
+case object One extends Bit
+case object Zero extends Bit
+
+implicit object EncodeC extends Generic[Encode] {
+    def unit : Encode[Unit] = new Encode[Unit] {def encode_ = const(Nil)}
+    def plus[A,B](a : Encode[A], b : Encode[B]) : Encode[Plus[A,B]] = new Encode[Plus[A,B]] {
+      def encode_ = x => x match {
+        case Inl(l) => Zero :: a.encode_(l)
+        case Inr(r) => One :: b.encode_(r)
+      }
+    }
+    def product[A,B](a : Encode[A], b : Encode[B]) : Encode[Product[A,B]] = new Encode[Product[A,B]]{
+      def encode_ = x => x match {
+        case  Product(l,r) => (a.encode_(l)) ++ (b.encode_(r))
+      }
+    }
+    def char : Encode[Char] = new Encode[Char]{
+      def encode_ = encodeChar
+    }
+    def int = new Encode[Int]{
+      def encode_ = encodeInt
+    }
+    def view[A,B](iso : Iso[B,A],  a : () => Encode[A]) : Encode[B] = new Encode[B]{
+        def encode_ = x => a().encode_(iso.from(x))
+    }
+  }
+
+  // Extend to fit all characters
+  def encodeChar(x : Char) : List[Bit] = {
+    x match{
+      case '0' => List(Zero)
+      case '1' => List(One)
+    }
+  }
+
+  // Extend to fit all integers
+  def encodeInt(x : Int) : List[Bit] = {
+    x match{
+      case 0 => List(Zero)
+      case 1 => List(One)
+    }
+  }
+
+def encodeTest(implicit g : Generic[Encode]) : List[Bit] = {
+	g.product(g.char,g.char).encode_(Product('0','0'))
+}
+
+def encodeTestRep(implicit rep : Rep[Char]) : List[Bit] = {
+	rep.rep.encode_('0')
+}
+
+def encodeTestGRep(implicit rep : GRep[Encode,Char]) : List[Bit] = {
+	rep.grep.encode_('0')
+}
+
+
+trait GRep[G[_], A] {
+def grep: G[A]
+}
+
+// implicit def mkGUnit[G[_]] = new GUnit[Encode]
+implicit def GUnit[G[_]](implicit gg: Generic[G]) = {
+	new GRep[G, Unit] {
+		def grep: G[Unit] = gg.unit
+	}
+} 
+
+implicit def GInt[G[_]](implicit gg: Generic[G]) = new GRep[G, Int] {
+    def grep: G[Int] = gg.int
+  }
+
+
+implicit def GChar[G[_]](implicit gg: Generic[G]) = {
+	new GRep[G, Char] {
+		def grep: G[Char] = gg.char
+	}	
+}	 
+
+
+implicit def GPlus[A, B, G[_]](implicit gg: Generic[G], a: GRep[G, A], b: GRep[G, B]) = {
+	new GRep[G, Plus[A, B]] {
+		def grep: G[Plus[A, B]] = gg.plus[A, B](a.grep, b.grep)
+	}
+}
+
+
+implicit def Gproduct[A, B, G[_]](implicit gg: Generic[G], a: GRep[G, A], b: GRep[G, B]) = {
+	new GRep[G, Product[A, B]] {
+	    def grep: G[Product[A, B]] = gg.product[A, B](a.grep, b.grep)
+	}
+}  
 

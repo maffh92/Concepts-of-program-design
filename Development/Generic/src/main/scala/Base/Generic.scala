@@ -1,7 +1,8 @@
 package Base
 
 import scala.language.{higherKinds, postfixOps}
-
+import Functions.Encode._
+import Functions.Everywhere
 object Generic {
 
   /*
@@ -71,29 +72,67 @@ object Generic {
   /*
     Generic representation
   */
+
+  trait Rep[A]{
+    def rep[G[_]](implicit gg : Generic[G]) : G[A]
+  }
+
+  implicit val grepUnit = {
+    new Rep[Unit]{
+      def rep[G[_]](implicit gg : Generic[G]) : G[Unit] = gg.unit
+    }
+  }
+
   trait GRep[G[_], A] {
     def grep: G[A]
   }
 
-  class GUnit[G[_]](implicit gg: Generic[G]) extends GRep[G, Unit] {
-    def grep: G[Unit] = gg.unit
+  // implicit def mkGUnit[G[_]] = new GUnit[Encode]
+  implicit def GUnit[G[_]](implicit gg: Generic[G]) = {
+    new GRep[G, Unit] {
+      def grep: G[Unit] = gg.unit
+    }
   }
 
-  class GInt[G[_]](implicit gg: Generic[G]) extends GRep[G, Int] {
+  implicit def GInt[G[_]](implicit gg: Generic[G]) = new GRep[G, Int] {
     def grep: G[Int] = gg.int
   }
 
-  class GChar[G[_]](implicit gg: Generic[G]) extends GRep[G, Char] {
-    def grep: G[Char] = gg.char
+
+  implicit def GChar[G[_]](implicit gg: Generic[G]) = {
+    new GRep[G, Char] {
+      def grep: G[Char] = gg.char
+    }
   }
 
-  class GPlus[A, B, G[_]](implicit gg: Generic[G], a: GRep[G, A], b: GRep[G, B]) extends GRep[G, Plus[A, B]] {
-    def grep: G[Plus[A, B]] = gg.plus[A, B](a.grep, b.grep)
+
+  implicit def GPlus[A, B, G[_]](implicit gg: Generic[G], a: GRep[G, A], b: GRep[G, B]) = {
+    new GRep[G, Plus[A, B]] {
+      def grep: G[Plus[A, B]] = gg.plus[A, B](a.grep, b.grep)
+    }
   }
 
-  class Gproduct[A, B, G[_]](implicit gg: Generic[G], a: GRep[G, A], b: GRep[G, B]) extends GRep[G, Product[A, B]] {
-    def grep: G[Product[A, B]] = gg.product[A, B](a.grep, b.grep)
+
+  implicit def Gproduct[A, B, G[_]](implicit gg: Generic[G], a: GRep[G, A], b: GRep[G, B]) = {
+    new GRep[G, Product[A, B]] {
+      def grep: G[Product[A, B]] = gg.product[A, B](a.grep, b.grep)
+    }
   }
+
+//  implicit def frepListCurried[B](implicit g : Generic[({type AB[A] = Functions.Crush[B,A]})#AB]) : Base.Generic.FRep[({type AB[A] = Functions.Crush[B,A]})#AB,List] = {
+//    new FRep[({type AB[X] = Crush[B,X]})#AB,List]{
+//      override def frep[A](g1: Crush[B, A]): Crush[B, List[A]] = frepListCrush(g1)
+//    }
+//  }
+
+  def GEveryWhere[G[_],A,B](implicit gg: Generic[({type C[B] = Everywhere[A, B]})#C]) = {
+    new GRep[({type C[B] = Everywhere[A, B]})#C, B] {
+      override def grep: Everywhere[A, B] = ???
+    }
+  }
+//  def everywhere[A,B](f : A => A, b : B)(implicit grep : GRep[({type C[B] = Everywhere[A,B]})#C,B]) : B = {
+//    grep.grep.everywhere_(f)(b)
+//  }
 
   /*
     FREP
