@@ -21,19 +21,6 @@ object  Everywhere {
     }
   }
 
-
-  //  The rest of implicit definitions are just straightforward.
-  implicit def GIntEverywhere[G[_],A](implicit gg: Generic[({type C[X] = Everywhere[A,X]})#C])  = new GRep[({type C[X] = Everywhere[A,X]})#C,Int] {
-    override def grep: Everywhere[A, Int] = gg.int
-  }
-
-  //  The rest of implicit definitions are just straightforward.
-  implicit def GUnitEverywhere[G[_],A](implicit gg: Generic[({type C[X] = Everywhere[A,X]})#C]) : GRep[({type C[X] = Everywhere[A,X]})#C,Unit] = {
-    new GRep[({type C[X] = Everywhere[A,X]})#C,Unit]{
-      override def grep: Everywhere[A, Unit] = gg.unit
-    }
-  }
-
   implicit def EverywhereC[A] = new Generic[({type C[X] = Everywhere[A,X]})#C] {
     def unit : Everywhere[A, Unit] = new Everywhere[A, Unit] {
       def everywhere_ = const(id(_) ) _

@@ -7,8 +7,10 @@ import Functions.Crush._
 import Functions.Map._
 
 object List {
-  //General representation of a list. A list is either a Cons or a Cons with a tail
-  type ListRep[A] = Plus[Unit,Product[A,List[A]]]
+  /*
+    Generic representation of a list. A list is either a Cons or a Cons with a tail
+  */
+  type ListRep[A] = Plus[Unit, Product[A, List[A]]]
 
   /*
   The functions FromList and ToList are just to create a isomorphic function in
@@ -16,46 +18,39 @@ object List {
   listIso is the isomorphic function
    */
 
-  implicit def listIso[A]  = new Iso[List[A],ListRep[A]] {
-    def fromList[A](l : List[A]) : ListRep[A] =
+  implicit def listIso[A] = new Iso[List[A], ListRep[A]] {
+    def fromList[A](l: List[A]): ListRep[A] =
       l match {
-        case Nil 	   => Inl(Unit)
-        case (x :: xs) => Inr(Product(x,xs))
+        case Nil => Inl(Unit)
+        case (x :: xs) => Inr(Product(x, xs))
       }
-    def toList[A](r : ListRep[A]) : List[A] =
+
+    def toList[A](r: ListRep[A]): List[A] =
       r match {
         case Inl(_) => Nil
-        case Inr(Product(x,xs)) => x :: xs
+        case Inr(Product(x, xs)) => x :: xs
       }
+
     def from = fromList
+
     def to = toList
   }
 
-
   implicit def rList[A, G[_]](implicit gg: Generic[G], g: G[A]): G[List[A]] = {
-    gg.view(listIso[A], () => gg.plus(gg.unit, gg.product(g, rList[A, G](gg,g))))
+    gg.view(listIso[A], () => gg.plus(gg.unit, gg.product(g, rList[A, G](gg, g))))
   }
 
-  implicit def GList1[A, G[_]](implicit gg: Generic[G], a: GRep[G,A]): GRep[G,List[A]] = new GRep[G,List[A]] {
-    def grep : G[List[A]] = rList(gg,a.grep)
+  implicit def GList[A, G[_]](implicit gg: Generic[G], a: GRep[G, A]): GRep[G, List[A]] = new GRep[G, List[A]] {
+    def grep: G[List[A]] = rList(gg, a.grep)
   }
 
-  class GenericList[G[_]](implicit gg: Generic[G]) {
-    def list[A](x : G[A]) : G[List[A]] = rList(gg,x)
-  }
-
-  class GList[A, G[_]](implicit glg: GenericList[G], a: GRep[G, A]) extends GRep[G, List[A]] {
-    def grep: G[List[A]] = glg.list[A](a.grep)
-  }
   /*
-    frepList is used as a helper function for the general dispatcher. It uses the Generic class that just takes 1 parameter.
+    RepList is used as a helper function for the general dispatcher.
+    It uses the Generic class that just takes 1 parameter.
    */
-  def frepList[A,G[_]](g : G[A])(implicit gg : Generic[G]): G[List[A]] = {
-    gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepList[A,G](g))))
-  }
-  implicit def RepList[G[_]](implicit g : Generic[G]) : FRep[G,List] = {
-    new FRep[G,List] {
-      def frep[A](g1 : G[A]) : G[List[A]] = frepList(g1)
+  implicit def RepList[G[_]](implicit g: Generic[G]): FRep[G, List] = {
+    new FRep[G, List] {
+      def frep[A](g1: G[A]): G[List[A]] = rList(g, g1)
     }
   }
 
@@ -64,66 +59,19 @@ object List {
    The difference between frepList is that this function uses a lambda type, such that it can obtain the parameter B when the frep function is called.
    */
   implicit def frepListCrush[A,B,G[_,_]](g : G[B, A])(implicit gg : Generic[({type AB[A] = G[B,A]})#AB]): G[B, List[A]] = {
-    gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepListCrush[A,B,G](g)(gg))))
+    gg.view(listIso[A], () => gg.plus(gg.unit, gg.product(g, frepListCrush[A, B, G](g)(gg))))
   }
-  implicit def frepListCurried[B,G[_,_]](implicit g : Generic[({type AB[A] = G[B,A]})#AB]) : Base.FRep[({type AB[A] = G[B,A]})#AB,List] = {
-    new FRep[({type AB[X] = G[B,X]})#AB,List]{
-      override def frep[A](g1: G[B, A]): G[B, List[A]] = frepListCrush(g1)(g)
-    }
-  }
-
-    /*
+  /*
       frep2List is used as a helper function for the general dispatcher. It uses the Generic2 class that just takes 2 parameters.
       It is explicit uses for the Map function. Unfortunately, we could not solve to it using a general parameter.
      */
-  def frep2List[A,B,G[_,_]](g : G[A,B])(implicit gg : Generic2[G]): G[List[A],List[B]] = {
-    gg.view(listIso[A],listIso[B],() => gg.plus(gg.unit,gg.product(g,frep2List[A,B,G](g))))
+  def frep2List[A, B, G[_, _]](g: G[A, B])(implicit gg: Generic2[G]): G[List[A], List[B]] = {
+    gg.view(listIso[A], listIso[B], () => gg.plus(gg.unit, gg.product(g, frep2List[A, B, G](g))))
   }
 
-  implicit val Rep2List = new Base.FRep2[Functions.Map,List]{
-    def frep2[A,B](g1: Map[A,B]) : Map[List[A],List[B]] = {
+  implicit val Rep2List = new Base.FRep2[Functions.Map, List] {
+    def frep2[A, B](g1: Map[A, B]): Map[List[A], List[B]] = {
       frep2List(g1)
-    }
-  }
-
-/*
-* The below code defines a Rep dispatcher, but our current functions do not use this Rep dispatcher.
- * The difference between Frep and Rep is that for Rep we have to define for every type a dispatcher(i.e int,char, etc)
-* */
-
-  trait Rep[A]{
-    def rep[G[_]](implicit gg : Generic[G]) : G[A]
-  }
-
-  implicit object RepUnit extends Rep[Unit]{
-    def rep[G[_]](implicit gg : Generic[G]) : G[Unit] = gg unit
-  }
-
-  implicit object RepChar extends Rep[Char]{
-    def rep[G[_]](implicit gg : Generic[G]) : G[Char] = gg char
-  }
-
-
-  implicit object RepInt extends Rep[Int]{
-    def rep[G[_]](implicit gg : Generic[G]) : G[Int] = gg int
-  }
-
-  implicit class RepPlus[A,B] (a : Rep[A])(implicit b : Rep[B]) extends Rep[Plus[A,B]]{
-    def rep[G[_]](implicit gg : Generic[G]) : G[Plus[A,B]] = {
-      gg plus[A,B](a.rep,b.rep)
-    }
-  }
-
-  class RepProduct[A,B] (implicit a : Rep[A],b : Rep[B]) extends Rep[Product[A,B]]{
-    def rep[G[_]](implicit gg : Generic[G]) : G[Product[A,B]] = {
-      gg product[A,B](a.rep,b.rep)
-    }
-  }
-
-
-  class RepList[A] (implicit a : Rep[A]) extends Rep[List[A]]{
-    def rep[G[_]](implicit gg : Generic[G]) : G[List[A]] = {
-      frepList(a.rep)
     }
   }
 }
