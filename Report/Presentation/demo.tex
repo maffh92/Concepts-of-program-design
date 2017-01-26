@@ -49,7 +49,7 @@ Do you ever find yourself writing variations of the same program over and over?
 \begin{columns}
 \begin{column}{.40\textwidth}
 \begin{lstlisting}[language=Haskell,basicstyle=\ttfamily\scriptsize]
-data List a = Cons a (List a) 
+data List a = Cons a (List a)
             | Nil
 
 size :: List a -> Int
@@ -59,7 +59,7 @@ size (Cons x xs) = 1 + size xs
 \end{column}
 \begin{column}{.48\textwidth}
 \begin{lstlisting}[language=Haskell,basicstyle=\ttfamily\scriptsize]
-data Tree a = Node (Tree a) (Tree a) 
+data Tree a = Node (Tree a) (Tree a)
             | Leaf a
 
 size :: Tree a -> Int
@@ -80,7 +80,7 @@ Most datatypes can be represented by combination of {\color{blue}\emph{basic typ
 \begin{column}{.40\textwidth}
 \begin{lstlisting}[language=Haskell,basicstyle=\ttfamily\scriptsize]
 data List a = Nil | Cons a (List a)
-\end{lstlisting} 
+\end{lstlisting}
 \vspace{-3pt}vs.
 \begin{lstlisting}[language=Haskell,basicstyle=\ttfamily\scriptsize,mathescape]
 data RList a = () :+: (a :$\times$: (List a))
@@ -115,7 +115,7 @@ case class Circle(radius: Double) extends Shape
 
 val gen = Generic[Shape]
 gen: shapeless.Generic[Shape]{type Repr = shapeless.:+:
-                             [Rectangle,shapeless.:+:[Circle,shapeless.CNil]]}
+                      [Rectangle,shapeless.:+:[Circle,shapeless.CNil]]}
 \end{lstlisting}
 The pattern:
 \begin{lstlisting}[language=Scala,basicstyle=\ttfamily\scriptsize]
@@ -182,7 +182,7 @@ class Generic g where
 \begin{lstlisting}[language=Haskell,basicstyle=\ttfamily\scriptsize,mathescape]
 class Rep g a where
   rep :: g a
-  
+
 instance (Generic g) => Rep g Int where
   rep = int
 \end{lstlisting}
@@ -198,12 +198,12 @@ To write a generic function we define a type and make it an instance of \texttt{
 \begin{lstlisting}[language=Haskell,basicstyle=\ttfamily\scriptsize,mathescape]
 newtype Encode a =  Enc {enc :: a -> [Bit]}
 
-instance Generic Enc where
+instance Generic Encode where
     unit       = Enc (const [])
     plus a b   = Enc ($\lambda$ x -> case x of
                    Inl l -> 0:enc a l
-                   Inr r -> 1:enc b r                   
-    prod a b   = Enc ($\lambda$ (x :+: y) -> 
+                   Inr r -> 1:enc b r
+    prod a b   = Enc ($\lambda$ (x :+: y) ->
                    enc a x ++ enc b y
     int        = Enc encodeInt
     view iso a = Enc ($\lambda$ x -> enc a (from iso x)}
@@ -222,12 +222,12 @@ Haskell's type classes can be simulated by Scala's traits:
 \begin{lstlisting}[language=Haskell,basicstyle=\ttfamily\scriptsize,mathescape]
 class Generic g where
     unit :: g Unit
-    plus :: g a -> g b -> 
+    plus :: g a -> g b ->
       g (a :+: b)
-    prod :: g a -> g b -> 
+    prod :: g a -> g b ->
       g (a :$\times$: b)
     int  :: g Int
-    view :: Iso b a -> 
+    view :: Iso b a ->
       g a -> b a
 \end{lstlisting}
 \end{column}
@@ -243,8 +243,8 @@ trait Generic[G[_]] {
     def view[A, B]
       (iso: Iso[B, A], a: () => G[A]): G[B]
 }
-\end{lstlisting}  
-\end{column}  
+\end{lstlisting}
+\end{column}
 \end{columns}
 \end{frame}
 
@@ -255,9 +255,9 @@ Haskell's class constraints can be modeled through Scala's implicits:
 \begin{lstlisting}[language=Haskell,basicstyle=\ttfamily\scriptsize,mathescape]
 newtype Encode a =  Enc {enc :: a -> [Bit]}
 
-instance Generic Enc where
-    unit       = Enc (const [])          
-    prod a b   = Enc ($\lambda$ (x :+: y) ->   enc a x ++ enc b y    
+instance Generic Encode where
+    unit       = Enc (const [])
+    prod a b   = Enc ($\lambda$ (x :+: y) ->   enc a x ++ enc b y
     view iso a = Enc ($\lambda$ x -> enc a (from iso x)}
 \end{lstlisting}
 \vspace{-10pt}vs.
@@ -265,7 +265,7 @@ instance Generic Enc where
 abstract class Encode[A] {
     def enc :  A => List[Bit]
   }
- 
+
 implicit object Encode extends Generic[Encode] {
     def unit : Encode[Unit] = new Encode[Unit] {def enc = const(Nil)}
     def prod[A,B](a : Encode[A], b : Encode[B]) : Encode[Prod[A,B]] = {
@@ -279,7 +279,7 @@ implicit object Encode extends Generic[Encode] {
     }
   }
 
-\end{lstlisting}  
+\end{lstlisting}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -294,16 +294,16 @@ implicit object Encode extends Generic[Encode] {
 trait Collect[F[_],B,A] {
   def collect_ : A => F[B]
 }
-implicit def CollectG[F[_],B] (implicit altf : Alternative[F]) = 
+implicit def CollectG[F[_],B] (implicit altf : Alternative[F]) =
   new Generic[({type C[X] = Collect[F,B,X]})#C]{...}
-\end{lstlisting}  
+\end{lstlisting}
 
 
 \item Scala's ability to do type inference is a lot weaker than Haskell's, resulting in failure to resolve implicit values.
 \begin{lstlisting}[language=Scala,basicstyle=\ttfamily\scriptsize,mathescape]
 type C[X] = Collect[List,Int,X]
 implicit val i = implicitly[GRep[C,List[Plus[Int,Char]]]]
-\end{lstlisting}  
+\end{lstlisting}
 
 \item Scala call-by-value by default has to be overcomed to deal with recursive types, which some functions in the EMGM library depend upon.
 \end{itemize}
