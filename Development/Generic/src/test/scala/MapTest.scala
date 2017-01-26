@@ -5,7 +5,7 @@ import Data.Zero
 import Data.Fork
 import Data.Succ
 import Data.Tree._
-import Data.GList._
+import Data.List._
 import Data.BinTree
 import Data.Bin
 import Data.Leaf

@@ -3,7 +3,7 @@ import Functions.Collect
 import org.scalatest.FlatSpec
 
 class CrushTest extends FlatSpec{
-  import Data.GList._
+  import Data.List._
 
   //test the sum function
   assert(Functions.Crush.sum(List(5,3,10))==18)

@@ -6,7 +6,7 @@ import Functions.Everywhere
 import Functions.Everywhere._
 import Data.List._
 import Data.Either._
-u
+
 class EverywhereTest extends FlatSpec {
   type R = List[Either[Int,Char]]
   type C[X] = Everywhere[Int,X]

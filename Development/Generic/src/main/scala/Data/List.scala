@@ -64,11 +64,11 @@ object List {
    The difference between frepList is that this function uses a lambda type, such that it can obtain the parameter B when the frep function is called.
    */
   def frepListCrush[A,B](g : Crush[B, A])(implicit gg : Generic[({type AB[A] = Crush[B,A]})#AB]): Crush[B, List[A]] = {
-    gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepListCrush[A,B](g))))
+    gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepListCrush[A,B](g)(gg))))
   }
   implicit def frepListCurried[B](implicit g : Generic[({type AB[A] = Functions.Crush[B,A]})#AB]) : Base.FRep[({type AB[A] = Functions.Crush[B,A]})#AB,List] = {
     new FRep[({type AB[X] = Crush[B,X]})#AB,List]{
-      override def frep[A](g1: Crush[B, A]): Crush[B, List[A]] = frepListCrush(g1)
+      override def frep[A](g1: Crush[B, A]): Crush[B, List[A]] = frepListCrush(g1)(g)
     }
   }
 
