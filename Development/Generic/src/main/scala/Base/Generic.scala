@@ -24,7 +24,9 @@ trait Iso[A, B] {
 }
 
 /*
-  Generic: Base, kind of arguments *
+  Generic base.
+  Note that Generic expects an argument G of kind * -> *
+  or in Scala notation G[_]
 */
 trait Generic[G[_]] {
   type Arity = Int
@@ -48,7 +50,7 @@ trait Generic[G[_]] {
 }
 
 /*
-  Generic: Kind of arguments * -> *
+  Generic with the argument G being of kind * -> * -> *
 */
 trait Generic2[G[_, _]] {
   type Arity = Int
@@ -86,15 +88,34 @@ object Rep {
 /*
   Generic representation.
 */
-
 trait GRep[G[_], A] {
   def grep: G[A]
 }
 
+/*
+  The companion object for GRep contains all the possible instances for GRep[G,A] given
+  there is an instance for Generic[G]. Is important not to bring this implicit definitions
+  into scope when using a concrete generic function or the implicit resolution mechanism of
+  Scala will not be able to disambiguate.
+ */
 object GRep {
 
+  /*
+    The apply method allows us to recover the concrete GRep instance
+    given we annotate with the desired types and Scala is able to construct
+    it.
+
+    For example in the Encode function if we want the concrete GRep[Encode,A]
+    (A is some concrete type) we can just:
+
+    val grep = GRep[Encode,A]
+
+    Of course this will raise a compile-time error if Scala cannot provide the
+    instance.
+  */
   def apply[G[_], A](implicit e: GRep[G, A]): GRep[G, A] = e
 
+  //  The rest of implicit definitions are just straightforward.
   implicit def GUnit[G[_]](implicit gg: Generic[G]): GRep[G, Unit] = new GRep[G, Unit] {
     def grep: G[Unit] = gg.unit
   }
