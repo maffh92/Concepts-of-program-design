@@ -3,16 +3,21 @@ package Functions
 import Base._
 import Base.Ops._
 
+/*
+  Trait Encode represent a encoding of a value of type A
+  into a list of Bit.
+ */
 trait Encode[A] {
   def encode_ :  A => List[Bit]
 }
 
-sealed class Bit
+sealed trait Bit
 case object One extends Bit
 case object Zero extends Bit
 
 object Encode {
 
+  /* Instance for Generic[Encode] */
   implicit object EncodeC extends Generic[Encode] {
     def unit : Encode[Unit] = new Encode[Unit] {def encode_ = const(Nil)}
     def plus[A,B](a : Encode[A], b : Encode[B]) : Encode[Plus[A,B]] = new Encode[Plus[A,B]] {
@@ -40,7 +45,6 @@ object Encode {
     }
   }
 
-
   // Extend to fit all characters
   def encodeChar(x : Char) : List[Bit] = {
     x match{
@@ -49,6 +53,7 @@ object Encode {
     }
   }
 
+  // Extend to encode a String
   def encodeString(x : String) : List[Bit] = {
     x.flatMap(encodeChar).toList
   }
@@ -59,5 +64,10 @@ object Encode {
       case 0 => List(Zero)
       case 1 => List(One)
     }
+  }
+
+  // The method encode is the actual interface that we desire to use.
+  def encode[A](a : A)(implicit grep: GRep[Encode,A]) : List[Bit] = {
+    grep.grep.encode_(a)
   }
 }

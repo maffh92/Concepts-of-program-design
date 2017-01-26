@@ -2,7 +2,6 @@ package Data
 import scala.language.higherKinds
 import scala.language.postfixOps
 import Base._
-import Base.Instances._
 import Functions._
 import Functions.Crush._
 import Functions.Map._
