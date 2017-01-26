@@ -36,14 +36,31 @@ object List {
     def to = toList
   }
 
-  implicit def rList[A, G[_]](implicit gg: Generic[G], g: G[A]): G[List[A]] = {
-    gg.view(listIso[A], () => gg.plus(gg.unit, gg.product(g, rList[A, G](gg, g))))
+  implicit def rList[A,G[_]](implicit gg: Generic[G], g: G[A]): G[List[A]] = {
+    gg.view(listIso[A], () => gg.plus(gg.unit, gg.product(g, rList(gg, g))))
   }
 
-  implicit def GList[A, G[_]](implicit gg: Generic[G], a: GRep[G, A]): GRep[G, List[A]] = new GRep[G, List[A]] {
+  implicit def GList[A,G[_]](implicit gg: Generic[G], a: GRep[G, A]): GRep[G, List[A]] = new GRep[G, List[A]] {
     def grep: G[List[A]] = rList(gg, a.grep)
   }
 
+  implicit def rListA[A,D,G[_,_]](implicit gg: Generic[({type C[X] = G[D,X]})#C], g: ({type C[X] = G[D,X]})#C[A]): ({type C[X] = G[D,X]})#C[List[A]] = {
+    gg.view(listIso[A], () => gg.plus(gg.unit, gg.product(g, rListA(gg, g))))
+  }
+
+  implicit def GListA[A,D,G[_,_]](implicit gg: Generic[({type C[X] = G[D,X]})#C], a: GRep[({type C[X] = G[D,X]})#C, A]): GRep[({type C[X] = G[D,X]})#C, List[A]] = new GRep[({type C[X] = G[D,X]})#C, List[A]] {
+    def grep: ({type C[X] = G[D,X]})#C[List[A]] = rListA(gg, a.grep)
+  }
+
+  implicit def rListB[A,D,G[_,_,_],F](implicit gg: Generic[({type C[X] = G[F,D,X]})#C], g: ({type C[X] = G[F,D,X]})#C[A]): ({type C[X] = G[F,D,X]})#C[List[A]] = {
+    gg.view(listIso[A], () => gg.plus(gg.unit, gg.product(g, rListB(gg, g))))
+  }
+
+  implicit def GListB[A,D,G[_,_,_],F](implicit gg: Generic[({type C[X] = G[F,D,X]})#C], a: GRep[({type C[X] = G[F,D,X]})#C, A]): GRep[({type C[X] = G[F,D,X]})#C, List[A]] = new GRep[({type C[X] = G[F,D,X]})#C, List[A]] {
+    def grep: ({type C[X] = G[F,D,X]})#C[List[A]] = rListB(gg, a.grep)
+  }
+
+  
   /*
     RepList is used as a helper function for the general dispatcher.
     It uses the Generic class that just takes 1 parameter.
