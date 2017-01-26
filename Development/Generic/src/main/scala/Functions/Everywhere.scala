@@ -15,9 +15,9 @@ trait Everywhere[A,B] {
 
 object  Everywhere {
 
-  def GRepEverywhere[A](f: A => A) = new GRep[({type C[X] = Everywhere[A,X]})#C,A] {
+  implicit def GRepEverywhere[A] = new GRep[({type C[X] = Everywhere[A,X]})#C,A] {
     def grep = new Everywhere[A,A] {
-      def everywhere_ : (A => A) => A => A = _ => a => f(a)
+      def everywhere_ : (A => A) => A => A = f => a => f(a)
     }
   }
 
