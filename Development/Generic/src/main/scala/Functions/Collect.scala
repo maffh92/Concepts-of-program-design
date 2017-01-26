@@ -1,7 +1,7 @@
 package Functions
 
 import scala.language.{higherKinds, postfixOps}
-import scalaz.Alternative
+import scalaz.{Alternative, Functor, Unapply}
 import Base._
 import Base.Ops._
 
@@ -11,7 +11,6 @@ import Base.Ops._
   We do not constraint in the trait itself F to be Alternative, but
   delegate that to the actual implementation.
  */
-
 trait Collect[F[_],B,A] {
   def collect_ : A => F[B]
 }
@@ -65,6 +64,10 @@ object Collect {
     grep.grep.collect_(a)
   }
 
+/*  def incrementInside[FA](fa: FA)(implicit
+                                  U: Unapply[Functor, FA] { type A = Int }
+  ): U.M[Int] = U.instance.map(U(fa))(_ + 1)
+*/
 }
 
 

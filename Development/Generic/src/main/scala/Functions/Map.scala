@@ -4,7 +4,7 @@ import Base._
 import Base.Ops._
 
 trait Map[A,B]{
-  def selMap(a : A)  : B
+  def selMap(a : A) : B
 }
 
 object Map {

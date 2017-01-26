@@ -2,6 +2,6 @@ package test
 
 import org.scalatest.FlatSpec
 
-class BinTreeTest extends FlatSpec{
+class MapTest extends FlatSpec {
 
 }
