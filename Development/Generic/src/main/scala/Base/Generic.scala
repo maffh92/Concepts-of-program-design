@@ -1,5 +1,7 @@
 package Base
 
+import Functions.Everywhere
+
 import scala.language.{higherKinds, postfixOps}
 
 /*
@@ -120,9 +122,28 @@ object GRep {
     def grep: G[Unit] = gg.unit
   }
 
+//  //  The rest of implicit definitions are just straightforward.
+//  implicit def GUnitEverywhere[G[_],A](implicit gg: Generic[({type C[X] = Everywhere[A,X]})#C])  = new GRep[({type C[X] = Everywhere[A,X]})#C,Int] {
+//    override def grep: Everywhere[A, Int] = gg.int
+//  }
+//
+//  //  The rest of implicit definitions are just straightforward.
+//  implicit def GUnitEverywhere[G[_],A](implicit gg: Generic[({type C[X] = Everywhere[A,X]})#C]) : GRep[({type C[X] = Everywhere[A,X]})#C,Unit] = {
+//    new GRep[({type C[X] = Everywhere[A,X]})#C,Unit]{
+//      override def grep: Everywhere[A, Unit] = gg.unit
+//    }
+//  }
+
+//    new GRep[G, Unit] {
+//    def grep: G[Unit] = gg.unit
+//  }
+
+
   implicit def GInt[G[_]](implicit gg: Generic[G]) = new GRep[G, Int] {
     def grep: G[Int] = gg.int
   }
+
+
 
   implicit def GChar[G[_]](implicit gg: Generic[G]) = {
     new GRep[G, Char] {
