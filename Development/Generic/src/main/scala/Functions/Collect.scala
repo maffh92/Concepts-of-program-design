@@ -20,7 +20,9 @@ object Collect {
 
   // This definition ensures that when a value of type B is found then
   // is injected with pure.
-  def GRepCollect[F[_],B](implicit altf : Alternative[F]) = new
+  // It has to be used every time we want to Collect values of a specific
+  // type B withing another type in the scope where the function collect is used.
+  implicit def GRepCollect[F[_],B](implicit altf : Alternative[F]) = new
     GRep[({type C[X] = Collect[F,B,X]})#C,B] {
       def grep = new Collect[F,B,B] {
         def collect_ : B => F[B] = x => altf.pure(x)
@@ -29,7 +31,7 @@ object Collect {
 
   // We need to make Collect an instance of Generic[Collect[F,B]] given an Alternative
   // instance for F.
-  implicit def CollectG[F[_],B] (implicit altf : Alternative[F]) = new Generic[({type C[X] = Collect[F,B,X]})#C] {
+  implicit def CollectG[F[_],B] (implicit altf : Alternative[F]) : Generic[({type C[X] = Collect[F,B,X]})#C] = new Generic[({type C[X] = Collect[F,B,X]})#C] {
     def unit: Collect[F,B,Unit] = new Collect[F,B,Unit] {
       def collect_ = const(altf.empty[B]) _
     }
@@ -59,8 +61,7 @@ object Collect {
   }
 
   // The method collect is the actual interface that we desire to use.
-  def collect[F[_],B,A](a : A)(implicit altf : Alternative[F], grep : GRep[({type C[X] = Collect[F,B,X]})#C,A]) : F[B] =
-  {
+  def collect[F[_],B,A](a : A)(implicit altf : Alternative[F], grep: GRep[({type C[X] = Collect[F,B,X]})#C,A]) : F[B] = {
     grep.grep.collect_(a)
   }
 

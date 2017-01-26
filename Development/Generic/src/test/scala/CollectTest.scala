@@ -11,27 +11,26 @@ class CollectTest extends FlatSpec {
   import Functions.Collect._
   import Data.GList._
 
-
   // We have to declare a type synonym in the top level
   // so Scala implicit mechanism is able to automatically find out instances.
   type C[X] = Collect[List,Int,X]
 
   // GRep (Collect List Int) Int
-  implicit val gi : GRep[C,Int] = GRepCollect[List,Int]
+  //implicit val gi  : GRep[C,Int] = GRepCollect[List,Int]
 
   // GRep (Collect List Int) Char
-  val gc = implicitly[GRep[C,Char]]
+  //val gc = implicitly[GRep[C,Char]]
 
   // Generic[Collect[List,Int]
-  val genc = implicitly[Generic[C]]
+  //val genc = implicitly[Generic[C]]
 
   // GRep (Collect List Int) (Product Int Char)
-  val gp = implicitly[GRep[C,Plus[Int,Char]]]// = GProduct[Int,Char,C](genc,gi,gc)
+  //val gp = implicitly[GRep[C,Plus[Int,Char]]]// = GProduct[Int,Char,C](genc,gi,gc)
 
   // GRep (Collect List Int) List[Product[[Generic[C]]Int,Char]]
   implicit val gl = implicitly[GRep[C,List[Plus[Int,Char]]]]
 
-  assert(collect[List,Int,List[Plus[Int,Char]]](List(Inl(1), Inr('c'))) == List(1))
+  assert(collect[List,Int,List[Plus[Int,Char]]](List(Inl(1), Inr('c'), Inl(2))) == List(1,2))
 
   val e1 = E(P("Matthew", "Amsterdam"),S(1000))
   val e2 = E(P("Carlos", "Utrecht"),S(1500))
