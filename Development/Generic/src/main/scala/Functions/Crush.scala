@@ -25,7 +25,7 @@ trait Crush[B,A] {
 
 object Crush {
   //implicit def mkCrush[B] : CrushC[B] = new CrushC[B]
-  class CrushC[B] extends Generic[({type AB[A] = Crush[B, A]})#AB] {
+  implicit def CrushC[B] = new Generic[({type AB[A] = Crush[B, A]})#AB] {
     def idCrush[A]: Crush[B, A] = new Crush[B, A] {
       override def selCrush(asc: Assoc)(a: A)(b: B) = id(b)
     }
