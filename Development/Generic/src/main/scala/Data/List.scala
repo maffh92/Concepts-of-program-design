@@ -6,7 +6,7 @@ import Functions._
 import Functions.Crush._
 import Functions.Map._
 
-object GList {
+object List {
   //General representation of a list. A list is either a Cons or a Cons with a tail
   type ListRep[A] = Plus[Unit,Product[A,List[A]]]
 

@@ -1,14 +1,14 @@
 package test
 
 import Base._
-import Data._
+import Data.{C, D, DU, E, P, PU, S}
 import org.scalatest.FlatSpec
 
 import scalaz.std.list._
 
 class CollectTest extends FlatSpec {
-  import Data.GList._
-  import Data.GEither._
+  import Data.List._
+  import Data.Either._
   import Functions.Collect
   import Functions.Collect._
 

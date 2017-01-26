@@ -2,7 +2,7 @@ package Data
 
 import Base._
 
-object GEither {
+object Either {
   type EitherRep[A,B] = Plus[A,B]
 
   def EitherIso[A,B] : Iso[Either[A,B],EitherRep[A,B]] = new Iso[Either[A,B],EitherRep[A,B]] {
