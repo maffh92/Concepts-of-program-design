@@ -1,20 +1,21 @@
+package test
+
 import Base._
+import Data.{C, D, DU, E, P, PU, S}
 import org.scalatest.FlatSpec
-import Data.Company._
 
 import scalaz.std.list._
-import Data._
 
 class CollectTest extends FlatSpec {
-  import Base.GRep
+  import Data.List._
+  import Data.Either._
   import Functions.Collect
   import Functions.Collect._
-  import Data.GList._
 
   // We have to declare a type synonym in the top level
   // so Scala implicit mechanism is able to automatically find out instances.
   type C[X] = Collect[List,Int,X]
-
+  type R = List[Either[Int,Char]]
   // GRep (Collect List Int) Int
   //implicit val gi  : GRep[C,Int] = GRepCollect[List,Int]
 
@@ -22,15 +23,17 @@ class CollectTest extends FlatSpec {
   //val gc = implicitly[GRep[C,Char]]
 
   // Generic[Collect[List,Int]
-  //val genc = implicitly[Generic[C]]
+  //val genc = implicitly[Generic[({type C[X] = Collect[List,Int,X]})#C]]
 
   // GRep (Collect List Int) (Product Int Char)
-  //val gp = implicitly[GRep[C,Plus[Int,Char]]]// = GProduct[Int,Char,C](genc,gi,gc)
+  //val gp = implicitly[GRep[C,Plus[Int,Char]]] = GProduct[Int,Char,C](genc,gi,gc)
 
   // GRep (Collect List Int) List[Product[[Generic[C]]Int,Char]]
-  implicit val gl = implicitly[GRep[C,List[Plus[Int,Char]]]]
+  implicit val gl = implicitly[GRep[C,R]]
 
-  assert(collect[List,Int,List[Plus[Int,Char]]](List(Inl(1), Inr('c'), Inl(2))) == List(1,2))
+  "collect" should "get all int from the list" in {
+    assert(collect[List, Int, R](List(Left(1), Right('c'), Left(2))) == List(1, 2))
+  }
 
   val e1 = E(P("Matthew", "Amsterdam"),S(1000))
   val e2 = E(P("Carlos", "Utrecht"),S(1500))

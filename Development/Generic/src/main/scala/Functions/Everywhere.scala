@@ -5,13 +5,23 @@ import Base.Ops._
 
 import scala.language.{higherKinds, postfixOps}
 
-abstract class Everywhere[A,B] {
+/*
+ * Everywhere represents the "map" of a function A -> A
+ * inside some other type B.
+ */
+trait Everywhere[A,B] {
   def everywhere_ : (A => A) => B => B
 }
 
 object  Everywhere {
 
-  class EverywhereC[A] extends Generic[({type C[B] = Everywhere[A,B]})#C] {
+  implicit def GRepEverywhere[A] = new GRep[({type C[X] = Everywhere[A,X]})#C,A] {
+    def grep = new Everywhere[A,A] {
+      def everywhere_ : (A => A) => A => A = f => a => f(a)
+    }
+  }
+
+  implicit def EverywhereC[A] = new Generic[({type C[X] = Everywhere[A,X]})#C] {
     def unit : Everywhere[A, Unit] = new Everywhere[A, Unit] {
       def everywhere_ = const(id(_) ) _
     }
@@ -48,7 +58,7 @@ object  Everywhere {
     }
   }
 
-  def everywhere[A,B](f : A => A, b : B)(implicit grep : GRep[({type C[B] = Everywhere[A,B]})#C,B]) : B = {
+  def everywhere[A,B](f : A => A, b : B)(implicit grep : GRep[({type C[X] = Everywhere[A,X]})#C,B]) : B = {
     grep.grep.everywhere_(f)(b)
   }
 }
