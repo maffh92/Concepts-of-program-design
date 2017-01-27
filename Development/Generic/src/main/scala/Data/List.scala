@@ -76,12 +76,18 @@ object List {
    The difference between frepList is that this function uses a lambda type, such that it can obtain the parameter B when the frep function is called.
    */
   implicit def frepListCrush[A,B,G[_,_]](g : G[B, A])(implicit gg : Generic[({type AB[A] = G[B,A]})#AB]): G[B, List[A]] = {
-    gg.view(listIso[A], () => gg.plus(gg.unit, gg.product(g, frepListCrush[A, B, G](g)(gg))))
+    gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepListCrush[A,B,G](g)(gg))))
   }
+  implicit def frepList[B,G[_,_]](implicit g : Generic[({type AB[A] = G[B,A]})#AB]) : Base.FRep[({type AB[A] = G[B,A]})#AB,List] = {
+    new FRep[({type AB[X] = G[B,X]})#AB,List]{
+      override def frep[A](g1: G[B, A]): G[B, List[A]] = frepListCrush(g1)(g)
+    }
+  }
+
   /*
-      frep2List is used as a helper function for the general dispatcher. It uses the Generic2 class that just takes 2 parameters.
-      It is explicit uses for the Map function. Unfortunately, we could not solve to it using a general parameter.
-     */
+    frep2List is used as a helper function for the general dispatcher. It uses the Generic2 class that just takes 2 parameters.
+    It is explicit uses for the Map function. Unfortunately, we could not solve to it using a general parameter.
+   */
   def frep2List[A, B, G[_, _]](g: G[A, B])(implicit gg: Generic2[G]): G[List[A], List[B]] = {
     gg.view(listIso[A], listIso[B], () => gg.plus(gg.unit, gg.product(g, frep2List[A, B, G](g))))
   }

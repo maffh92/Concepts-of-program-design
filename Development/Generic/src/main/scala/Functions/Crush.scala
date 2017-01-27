@@ -78,9 +78,16 @@ object Crush {
       crushr((a : B) => (b : B) => mon.mappend(a,b))(mon.mempty)(x)
     }
 
-  def crushlM[B, F[_]](x: F[B])(implicit mon: Monoid[B], rep: FRep[({type AB[X] = Crush[B, X]})#AB, F]): B = {
-    crushl((a : B) => (b : B) => mon.mappend(a,b))(mon.mempty)(x)
+  //The sum function takes the product of some data generic data type, which has a general dispatcher defined by the FRep class.
+  def sum[B, F[_]](x: F[B])(implicit number: Number[B], rep: FRep[({type AB[X] = Crush[B, X]})#AB, F]): B = {
+    crushr(number.plus)(number.emptyPlus)(x)
   }
+
+
+  def product[B, F[_]](x: F[B])(implicit number: Number[B], rep: FRep[({type AB[X] = Crush[B, X]})#AB, F]): B = {
+    crushr(number.product)(number.emptyProduct)(x)
+  }
+
 }
 
 
