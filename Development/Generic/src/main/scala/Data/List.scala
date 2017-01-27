@@ -8,14 +8,13 @@ import Functions.Map._
 
 object List {
   /*
-    Generic representation of a list. A list is either a Cons or a Cons with a tail
+    Generic representation of a list. A List is either a Cons or a Cons with a tail
   */
   type ListRep[A] = Plus[Unit, Product[A, List[A]]]
 
   /*
   The functions FromList and ToList are just to create a isomorphic function in
-  order to go from the general representation and the other way around.
-  listIso is the isomorphic function
+  order to go from the generic representation and the other way around.
    */
 
   implicit def listIso[A] = new Iso[List[A], ListRep[A]] {
@@ -36,6 +35,13 @@ object List {
     def to = toList
   }
 
+  /* The definitions rList and GList ideally are the only ones with the ListIso that
+     the user of the library must defined.
+
+     However, as pointed out Scala type inference/implicit resolution mechanism does not
+     work as we would expect so we have to actually provide another implicits where we tweak the
+     type annotations to include some of the type-level lambdas that show up in the generic functions.
+   */
   implicit def rList[A,G[_]](implicit gg: Generic[G], g: G[A]): G[List[A]] = {
     gg.view(listIso[A], () => gg.plus(gg.unit, gg.product(g, rList(gg, g))))
   }
@@ -52,11 +58,11 @@ object List {
     def grep: ({type C[X] = G[D,X]})#C[List[A]] = rListA(gg, a.grep)
   }
 
-  implicit def rListB[A,D,G[_,_,_],F](implicit gg: Generic[({type C[X] = G[F,D,X]})#C], g: ({type C[X] = G[F,D,X]})#C[A]): ({type C[X] = G[F,D,X]})#C[List[A]] = {
+  implicit def rListB[A,D,G[_[_],_,_],F[_]](implicit gg: Generic[({type C[X] = G[F,D,X]})#C], g: ({type C[X] = G[F,D,X]})#C[A]): ({type C[X] = G[F,D,X]})#C[List[A]] = {
     gg.view(listIso[A], () => gg.plus(gg.unit, gg.product(g, rListB(gg, g))))
   }
 
-  implicit def GListB[A,D,G[_,_,_],F](implicit gg: Generic[({type C[X] = G[F,D,X]})#C], a: GRep[({type C[X] = G[F,D,X]})#C, A]): GRep[({type C[X] = G[F,D,X]})#C, List[A]] = new GRep[({type C[X] = G[F,D,X]})#C, List[A]] {
+  implicit def GListB[A,D,G[_[_],_,_],F[_]](implicit gg: Generic[({type C[X] = G[F,D,X]})#C], a: GRep[({type C[X] = G[F,D,X]})#C, A]): GRep[({type C[X] = G[F,D,X]})#C, List[A]] = new GRep[({type C[X] = G[F,D,X]})#C, List[A]] {
     def grep: ({type C[X] = G[F,D,X]})#C[List[A]] = rListB(gg, a.grep)
   }
 

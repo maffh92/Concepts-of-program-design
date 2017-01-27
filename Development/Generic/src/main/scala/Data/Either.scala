@@ -37,11 +37,11 @@ object Either {
     }
 
 
-  implicit def rEitherB[A,B,D,G[_,_,_],F](implicit gg: Generic[({type C[X] = G[F,D,X]})#C], ga: ({type C[X] = G[F,D,X]})#C[A], gb: ({type C[X] = G[F,D,X]})#C[B]): ({type C[X] = G[F,D,X]})#C[Either[A,B]] = {
+  implicit def rEitherB[A,B,D,G[_[_],_,_],F[_]](implicit gg: Generic[({type C[X] = G[F,D,X]})#C], ga: ({type C[X] = G[F,D,X]})#C[A], gb: ({type C[X] = G[F,D,X]})#C[B]): ({type C[X] = G[F,D,X]})#C[Either[A,B]] = {
     gg.view(EitherIso, () => gg.plus(ga,gb))
   }
 
-  implicit def GEitherB[A,B,D,G[_,_,_],F](implicit gg: Generic[({type C[X] = G[F,D,X]})#C], a: GRep[({type C[X] = G[F,D,X]})#C,A], b: GRep[({type C[X] = G[F,D,X]})#C,B]): GRep[({type C[X] = G[F,D,X]})#C,Either[A,B]] =
+  implicit def GEitherB[A,B,D,G[_[_],_,_],F[_]](implicit gg: Generic[({type C[X] = G[F,D,X]})#C], a: GRep[({type C[X] = G[F,D,X]})#C,A], b: GRep[({type C[X] = G[F,D,X]})#C,B]): GRep[({type C[X] = G[F,D,X]})#C,Either[A,B]] =
     new GRep[({type C[X] = G[F,D,X]})#C,Either[A,B]] {
       def grep : ({type C[X] = G[F,D,X]})#C[Either[A,B]] = rEitherB(gg,a.grep,b.grep)
     }

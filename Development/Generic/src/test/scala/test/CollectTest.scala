@@ -1,7 +1,7 @@
 package test
 
 import Base._
-import Data.{C, D, DU, E, P, PU, S}
+import Data.{C, Company, D, DU, E, P, PU, S, Salary}
 import org.scalatest.FlatSpec
 
 import scalaz.std.list._
@@ -32,7 +32,7 @@ class CollectTest extends FlatSpec {
   //implicit val gl = implicitly[GRep[C,R]]
 
   "collect" should "get all int from the list" in {
-    //assert(collect[List,Int,R](List(Left(1), Right('c'), Left(2))) == List(1, 2))
+    assert(collect[List,Int,List[Either[Int,Char]]](List(Left(1), Right('c'), Left(2))) == List(1, 2))
   }
 
   val e1 = E(P("Matthew", "Amsterdam"),S(1000))
@@ -47,7 +47,7 @@ class CollectTest extends FlatSpec {
   val c1 = C(List(d1,d2))
   "Collect" should "get all salaries from the list" in {
 
-    //assert(collect[List,Salary,Company](c1) == List(1000,1500,2000,3000).map(S))
+    assert(collect[List,Salary,Company](c1) == List(1000,1500,2000,3000).map(S))
     //assert(collect[List,Int,List[Either[Int,Char]]](List(Left(1), Right('c'))) == List(1))
     //assert(collect[List,Int,List[Int]](List(1))==List(1))
 

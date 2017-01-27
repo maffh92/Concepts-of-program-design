@@ -143,52 +143,67 @@ object GRep {
     }
   }
 
-  // Instances for {type C[X] = G[A,X]})#C
-  implicit def GUnitA[A,G[_,_]](implicit gg: Generic[({type C[X] = G[A,X]})#C]): GRep[({type C[X] = G[A,X]})#C, Unit] = new GRep[({type C[X] = G[A,X]})#C, Unit] {
-    def grep: ({type C[X] = G[A,X]})#C[Unit] = gg.unit
+  /* Ideally it will be enough with the implicits declared above to be able to construct such
+     GRep[G,_] given Generic[G]. However, Scala in the presence of type-level lambdas is not 
+     able to actually find the correct instances.
+     
+     Therefore we are forced to introduce the following implicits that Scala can use when the 
+     generic function F (given as a trait) at hand has kind F[_,_], and we apply it generically
+     for a concrete A as F[A,_].
+
+     This is mimic by the type-level lambda ({type C[X] = F[A,X]})#C.
+
+     With this "hack" now we are able for example to use Everywhere[A,B] seamlessly.
+   */
+  implicit def GUnitA[A,F[_,_]](implicit gg: Generic[({type C[X] = F[A,X]})#C]): GRep[({type C[X] = F[A,X]})#C, Unit] = new GRep[({type C[X] = F[A,X]})#C, Unit] {
+    def grep: ({type C[X] = F[A,X]})#C[Unit] = gg.unit
   }
-  implicit def GIntA[A,G[_,_]](implicit gg: Generic[({type C[X] = G[A,X]})#C]) = new GRep[({type C[X] = G[A,X]})#C, Int] {
-    def grep: ({type C[X] = G[A,X]})#C[Int] = gg.int
+  implicit def GIntA[A,F[_,_]](implicit gg: Generic[({type C[X] = F[A,X]})#C]) = new GRep[({type C[X] = F[A,X]})#C, Int] {
+    def grep: ({type C[X] = F[A,X]})#C[Int] = gg.int
   }
-  implicit def GCharA[A,G[_,_]](implicit gg: Generic[({type C[X] = G[A,X]})#C]) = {
-    new GRep[({type C[X] = G[A,X]})#C, Char] {
-      def grep: ({type C[X] = G[A,X]})#C[Char] = gg.char
+  implicit def GCharA[A,F[_,_]](implicit gg: Generic[({type C[X] = F[A,X]})#C]) = {
+    new GRep[({type C[X] = F[A,X]})#C, Char] {
+      def grep: ({type C[X] = F[A,X]})#C[Char] = gg.char
     }
   }
-  implicit def GStringA[A,G[_,_]](implicit gg: Generic[({type C[X] = G[A,X]})#C]): GRep[({type C[X] = G[A,X]})#C, String] = new GRep[({type C[X] = G[A,X]})#C, String] {
-    def grep: ({type C[X] = G[A,X]})#C[String] = gg.string
+  implicit def GStringA[A,F[_,_]](implicit gg: Generic[({type C[X] = F[A,X]})#C]): GRep[({type C[X] = F[A,X]})#C, String] = new GRep[({type C[X] = F[A,X]})#C, String] {
+    def grep: ({type C[X] = F[A,X]})#C[String] = gg.string
   }
-  implicit def GPlusA[A, B, D,G[_,_]](implicit gg: Generic[({type C[X] = G[D,X]})#C], a: GRep[({type C[X] = G[D,X]})#C, A], b: GRep[({type C[X] = G[D,X]})#C, B]) = {
-    new GRep[({type C[X] = G[D,X]})#C, Plus[A, B]] {
-      def grep: ({type C[X] = G[D,X]})#C[Plus[A, B]] = gg.plus[A, B](a.grep, b.grep)
+  implicit def GPlusA[A, B, D,F[_,_]](implicit gg: Generic[({type C[X] = F[D,X]})#C], a: GRep[({type C[X] = F[D,X]})#C, A], b: GRep[({type C[X] = F[D,X]})#C, B]) = {
+    new GRep[({type C[X] = F[D,X]})#C, Plus[A, B]] {
+      def grep: ({type C[X] = F[D,X]})#C[Plus[A, B]] = gg.plus[A, B](a.grep, b.grep)
     }
   }
-  implicit def GProductA[A, B,D,G[_,_]](implicit gg: Generic[({type C[X] = G[D,X]})#C], a: GRep[({type C[X] = G[D,X]})#C, A], b: GRep[({type C[X] = G[D,X]})#C, B]) = {
-    new GRep[({type C[X] = G[D,X]})#C, Product[A, B]] {
-      def grep: ({type C[X] = G[D,X]})#C[Product[A, B]] = gg.product[A, B](a.grep, b.grep)
+  implicit def GProductA[A, B,D,F[_,_]](implicit gg: Generic[({type C[X] = F[D,X]})#C], a: GRep[({type C[X] = F[D,X]})#C, A], b: GRep[({type C[X] = F[D,X]})#C, B]) = {
+    new GRep[({type C[X] = F[D,X]})#C, Product[A, B]] {
+      def grep: ({type C[X] = F[D,X]})#C[Product[A, B]] = gg.product[A, B](a.grep, b.grep)
     }
   }
-  // Instances for ({type C[X] = G[F,D,X]})#C
-  implicit def GUnitB[D,G[_,_,_],F](implicit gg: Generic[({type C[X] = G[F,D,X]})#C]): GRep[({type C[X] = G[F,D,X]})#C, Unit] = new GRep[({type C[X] = G[F,D,X]})#C, Unit] {
+
+  /* The "hack" we use above however does not work for example for a function such as collect
+     where still Scala is not able to derive the necessary instance without any type information
+     as it occurs in the case above.
+   */
+  implicit def GUnitB[D,G[_[_],_,_],F[_]](implicit gg: Generic[({type C[X] = G[F,D,X]})#C]): GRep[({type C[X] = G[F,D,X]})#C, Unit] = new GRep[({type C[X] = G[F,D,X]})#C, Unit] {
     def grep: ({type C[X] = G[F,D,X]})#C[Unit] = gg.unit
   }
-  implicit def GIntB[D,G[_,_,_],F](implicit gg: Generic[({type C[X] = G[F,D,X]})#C]) = new GRep[({type C[X] = G[F,D,X]})#C, Int] {
+  implicit def GIntB[D,G[_[_],_,_],F[_]](implicit gg: Generic[({type C[X] = G[F,D,X]})#C]) = new GRep[({type C[X] = G[F,D,X]})#C, Int] {
     def grep: ({type C[X] = G[F,D,X]})#C[Int] = gg.int
   }
-  implicit def GCharB[D,G[_,_,_],F](implicit gg: Generic[({type C[X] = G[F,D,X]})#C]) = {
+  implicit def GCharB[D,G[_[_],_,_],F[_]](implicit gg: Generic[({type C[X] = G[F,D,X]})#C]) = {
     new GRep[({type C[X] = G[F,D,X]})#C, Char] {
       def grep: ({type C[X] = G[F,D,X]})#C[Char] = gg.char
     }
   }
-  implicit def GStringB[D,G[_,_,_],F](implicit gg: Generic[({type C[X] = G[F,D,X]})#C]): GRep[({type C[X] = G[F,D,X]})#C, String] = new GRep[({type C[X] = G[F,D,X]})#C, String] {
+  implicit def GStringB[D,G[_[_],_,_],F[_]](implicit gg: Generic[({type C[X] = G[F,D,X]})#C]): GRep[({type C[X] = G[F,D,X]})#C, String] = new GRep[({type C[X] = G[F,D,X]})#C, String] {
     def grep: ({type C[X] = G[F,D,X]})#C[String] = gg.string
   }
-  implicit def GPlusB[A, B, D,G[_,_,_],F](implicit gg: Generic[({type C[X] = G[F,D,X]})#C], a: GRep[({type C[X] = G[F,D,X]})#C, A], b: GRep[({type C[X] = G[F,D,X]})#C, B]) = {
+  implicit def GPlusB[A, B, D,G[_[_],_,_],F[_]](implicit gg: Generic[({type C[X] = G[F,D,X]})#C], a: GRep[({type C[X] = G[F,D,X]})#C, A], b: GRep[({type C[X] = G[F,D,X]})#C, B]) = {
     new GRep[({type C[X] = G[F,D,X]})#C, Plus[A, B]] {
       def grep: ({type C[X] = G[F,D,X]})#C[Plus[A, B]] = gg.plus[A, B](a.grep, b.grep)
     }
   }
-  implicit def GProductB[A, B,D,G[_,_,_],F](implicit gg: Generic[({type C[X] = G[F,D,X]})#C], a: GRep[({type C[X] = G[F,D,X]})#C, A], b: GRep[({type C[X] = G[F,D,X]})#C, B]) = {
+  implicit def GProductB[A, B,D,G[_[_],_,_],F[_]](implicit gg: Generic[({type C[X] = G[F,D,X]})#C], a: GRep[({type C[X] = G[F,D,X]})#C, A], b: GRep[({type C[X] = G[F,D,X]})#C, B]) = {
     new GRep[({type C[X] = G[F,D,X]})#C, Product[A, B]] {
       def grep: ({type C[X] = G[F,D,X]})#C[Product[A, B]] = gg.product[A, B](a.grep, b.grep)
     }
