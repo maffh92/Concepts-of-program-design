@@ -1,7 +1,6 @@
 package Data
 
 import Base._
-import Data.GList._
 
 /*
 This file contains the representation of the Company class.

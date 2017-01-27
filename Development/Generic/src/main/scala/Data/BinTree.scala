@@ -13,7 +13,7 @@ sealed trait BinTree[T]
 case class Leaf[T](leaf : T) extends BinTree[T]
 case class Bin[T](left : BinTree[T], right : BinTree[T]) extends BinTree[T]
 
-object Tree{
+object GBinTree{
 
   //General representation
   type BinTreeRep[T] = Plus[T,Product[BinTree[T],BinTree[T]]]

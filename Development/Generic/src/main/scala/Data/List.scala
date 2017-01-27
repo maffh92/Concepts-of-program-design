@@ -71,7 +71,7 @@ object List {
     RepList is used as a helper function for the general dispatcher.
     It uses the Generic class that just takes 1 parameter.
    */
-  implicit def RepList[G[_]](implicit g: Generic[G]): FRep[G, List] = {
+  implicit def frepListA[G[_]](implicit g: Generic[G]): FRep[G, List] = {
     new FRep[G, List] {
       def frep[A](g1: G[A]): G[List[A]] = rList(g, g1)
     }
@@ -79,12 +79,12 @@ object List {
 
   /* frepListCurried is creates an instance for the general dispatcher FRep,
     which can be used by the functions extended by the Generic class that takes 1 parameter.
-   The difference between frepList is that this function uses a lambda type, such that it can obtain the parameter B when the frep function is called.
+   The difference between frepListA is that frepListB uses a lambda type, such that it can obtain the parameter B when the frep function is called.
    */
   implicit def frepListCrush[A,B,G[_,_]](g : G[B, A])(implicit gg : Generic[({type AB[A] = G[B,A]})#AB]): G[B, List[A]] = {
     gg.view(listIso[A],() => gg.plus(gg.unit,gg.product(g,frepListCrush[A,B,G](g)(gg))))
   }
-  implicit def frepList[B,G[_,_]](implicit g : Generic[({type AB[A] = G[B,A]})#AB]) : Base.FRep[({type AB[A] = G[B,A]})#AB,List] = {
+  implicit def frepListB[B,G[_,_]](implicit g : Generic[({type AB[A] = G[B,A]})#AB]) : Base.FRep[({type AB[A] = G[B,A]})#AB,List] = {
     new FRep[({type AB[X] = G[B,X]})#AB,List]{
       override def frep[A](g1: G[B, A]): G[B, List[A]] = frepListCrush(g1)(g)
     }

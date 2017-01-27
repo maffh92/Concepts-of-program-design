@@ -74,7 +74,7 @@ object Crush {
   }
 
   // Crush with Monoid.
-  def crushrM[B, F[_]](x: F[B])(implicit mon: Monoid[B], rep: FRep[({type AB[X] = Crush[B, X]})#AB, F]): B = {
+  def crushrM[B, F[_]](x: F[B])(mon: Monoid[B])(implicit rep: FRep[({type AB[X] = Crush[B, X]})#AB, F]): B = {
       crushr((a : B) => (b : B) => mon.mappend(a,b))(mon.mempty)(x)
     }
 

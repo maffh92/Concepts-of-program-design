@@ -1,21 +1,10 @@
 package test
 
-import Data.List._
-import Data.PerfectTree._
-import Data.Tree._
-import Data.{Bin, BinTree, Fork, Leaf, Perfect, Succ, Zero}
-import Functions.Map._
 import org.scalatest.FlatSpec
 import Data.PerfectTree._
-import Data.Perfect
-import Data.Zero
-import Data.Fork
-import Data.Succ
-import Data.Tree._
+import Data.{Perfect,Zero, Fork, Succ,BinTree,Bin,Leaf}
+import Data.GBinTree._
 import Data.List._
-import Data.BinTree
-import Data.Bin
-import Data.Leaf
 import Functions.Map._
 
 class MapTest extends FlatSpec{
